@@ -1,0 +1,20 @@
+{
+  "short_name": "SYNTRRIX",
+  "name": "SYNTRRIX",
+  "icons": [
+    {
+      "src": "biznex-logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "biznex-logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

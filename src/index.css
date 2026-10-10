@@ -1,0 +1,46 @@
+:root {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    'Roboto', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  /* Keep vertical scrolling but hide scrollbars */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+body {
+  background-color: #f5f5f5;
+}
+
+#root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbars in WebKit-based browsers */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure SweetAlert2 appears above Material-UI modals */
+.swal2-container {
+  z-index: 15000 !important;
+}
+
+.swal2-popup {
+  z-index: 15001 !important;
+}
+
+.swal2-backdrop-show {
+  z-index: 14999 !important;
+}
