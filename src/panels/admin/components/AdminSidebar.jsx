@@ -44,6 +44,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 const navItems = [
   {
@@ -157,6 +158,7 @@ const settingsItems = [
 function AdminSidebar({ drawerWidth }) {
   const { isSidebarOpen, toggleSidebar, isCollapsed, toggleCollapse } = useSidebar();
   const { logout } = useAuth();
+  const { isDark } = useThemeContext();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -180,17 +182,19 @@ function AdminSidebar({ drawerWidth }) {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#0b1624',
-        color: '#e5e7eb',
+        backgroundColor: isDark ? '#0b1624' : '#ffffff',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Toolbar
         sx={{
-          backgroundColor: '#0f1f33',
-          color: '#e5e7eb',
+          backgroundColor: isDark ? '#0f1f33' : '#f8fafc',
+          color: isDark ? '#e5e7eb' : '#0f172a',
           minHeight: '80px !important',
           justifyContent: 'space-between',
           px: isCollapsed ? 1 : 2,
+          borderBottom: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
         }}
       >
         {!isCollapsed && (
@@ -557,8 +561,8 @@ function AdminSidebar({ drawerWidth }) {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: drawerWidth,
-            borderRight: `1px solid rgba(255,255,255,0.08)`,
-            backgroundColor: '#0b1624',
+            borderRight: isDark ? `1px solid rgba(255,255,255,0.08)` : `1px solid #e2e8f0`,
+            backgroundColor: isDark ? '#0b1624' : '#ffffff',
           },
         }}
       >
@@ -572,10 +576,10 @@ function AdminSidebar({ drawerWidth }) {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: actualWidth,
-            borderRight: `1px solid rgba(255,255,255,0.08)`,
+            borderRight: isDark ? `1px solid rgba(255,255,255,0.08)` : `1px solid #e2e8f0`,
             transition: 'width 0.3s ease',
             overflowX: 'hidden',
-            backgroundColor: '#0b1624',
+            backgroundColor: isDark ? '#0b1624' : '#ffffff',
           },
         }}
       >

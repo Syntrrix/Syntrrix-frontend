@@ -37,8 +37,10 @@ import {
   updateSupplier,
 } from '../../../api/suppliers';
 import Swal from 'sweetalert2';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function Suppliers() {
+  const { isDark } = useThemeContext();
   // State for suppliers list
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -562,21 +564,22 @@ function Suppliers() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         height: 'calc(100vh - 64px)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         position: 'relative',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
           display: 'flex',
           flexDirection: 'column',
@@ -594,16 +597,17 @@ function Suppliers() {
             flexShrink: 0,
           }}
         >
-          <Typography variant="h5" fontWeight={700} sx={{ color: '#e5e7eb' }}>
+          <Typography variant="h5" fontWeight={700} sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
             Suppliers
           </Typography>
-                  <Button
-                    variant="contained"
+          <Button
+            variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAddSupplier}
             sx={{
               textTransform: 'none',
               px: 3,
+              borderRadius: '24px',
               backgroundColor: '#0ea5e9',
               '&:hover': { backgroundColor: '#0284c7' },
             }}
@@ -627,11 +631,11 @@ function Suppliers() {
                 </InputAdornment>
               ),
               sx: {
-                color: '#e5e7eb',
-                backgroundColor: '#0f2339',
-                borderRadius: 1,
+                color: isDark ? '#e5e7eb' : '#0f172a',
+                backgroundColor: isDark ? '#0f2339' : '#f8fafc',
+                borderRadius: 2,
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(148, 163, 184, 0.3)',
+                  borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'rgba(148, 163, 184, 0.5)',
@@ -648,9 +652,9 @@ function Suppliers() {
         <TableContainer
           component={Paper}
           sx={{
-            backgroundColor: '#0f172a',
+            backgroundColor: isDark ? '#0f172a' : '#ffffff',
             borderRadius: 2,
-            border: '1px solid rgba(148, 163, 184, 0.25)',
+            border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
             flex: 1,
             overflow: 'auto',
             minHeight: 0,
@@ -661,9 +665,9 @@ function Suppliers() {
               <TableRow>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -671,9 +675,9 @@ function Suppliers() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -681,9 +685,9 @@ function Suppliers() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -691,9 +695,9 @@ function Suppliers() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -701,9 +705,9 @@ function Suppliers() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -711,9 +715,9 @@ function Suppliers() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     textAlign: 'center',
                   }}

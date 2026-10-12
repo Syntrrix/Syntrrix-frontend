@@ -38,8 +38,11 @@ import { fetchProducts } from '../../../api/products';
 import { fetchBatchesByProduct, fetchBatches, updateBatch } from '../../../api/batches';
 import { useAuth } from '../../../context/AuthContext';
 import Swal from 'sweetalert2';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function PurchaseHistory() {
+  const { isDark } = useThemeContext();
+  const [purchases, setPurchases] = useState([]);
   const { user } = useAuth();
   const invoiceDateRef = useRef(null);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
@@ -287,6 +290,7 @@ function PurchaseHistory() {
       const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/';
       const baseUrl = API_BASE_URL.replace('/api', '').replace(/\/$/, '');
 
+      // Backend serializer should return full URL like: http://127.0.0.1:8000/media/invoices/filename.pdf
       // But handle both absolute and relative URLs for safety
       if (!url || url === 'null' || url === 'undefined') {
         console.error('Invalid invoice URL:', url);
@@ -1039,21 +1043,22 @@ function PurchaseHistory() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         height: 'calc(100vh - 64px)',
         overflow: 'hidden',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
           display: 'flex',
           flexDirection: 'column',
@@ -1071,7 +1076,7 @@ function PurchaseHistory() {
             flexShrink: 0,
           }}
         >
-          <Typography variant="h5" fontWeight={700} sx={{ color: '#e5e7eb' }}>
+          <Typography variant="h5" fontWeight={700} sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
             Purchase History
           </Typography>
           <Button
@@ -1081,6 +1086,7 @@ function PurchaseHistory() {
             sx={{
               textTransform: 'none',
               px: 3,
+              borderRadius: '24px',
               backgroundColor: '#0ea5e9',
               '&:hover': { backgroundColor: '#0284c7' },
             }}
@@ -1113,15 +1119,15 @@ function PurchaseHistory() {
                 disabled={loadingSuppliers}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#0f2339',
-                    color: '#e5e7eb',
-                    borderRadius: 1,
+                    backgroundColor: isDark ? '#0f2339' : '#f8fafc',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderRadius: 2,
                   },
                   '& .MuiInputLabel-root': {
-                    color: '#9ca3af',
+                    color: isDark ? '#9ca3af' : '#475569',
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(148, 163, 184, 0.3)',
+                    borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
                     borderColor: 'rgba(148, 163, 184, 0.5)',
@@ -1134,14 +1140,14 @@ function PurchaseHistory() {
                   ...params.InputProps,
                   sx: {
                     ...params.InputProps.sx,
-                    color: '#e5e7eb',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
                   },
                 }}
               />
             )}
             noOptionsText={loadingSuppliers ? 'Loading suppliers...' : 'No suppliers found'}
             PaperComponent={({ children, ...other }) => (
-              <Paper {...other} sx={{ backgroundColor: '#1e293b', color: '#e5e7eb' }}>
+              <Paper {...other} sx={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', color: isDark ? '#e5e7eb' : '#0f172a' }}>
                 {children}
               </Paper>
             )}
@@ -1174,11 +1180,11 @@ function PurchaseHistory() {
                 </InputAdornment>
               ),
               sx: {
-                color: '#e5e7eb',
-                backgroundColor: '#0f2339',
-                borderRadius: 1,
+                color: isDark ? '#e5e7eb' : '#0f172a',
+                backgroundColor: isDark ? '#0f2339' : '#f8fafc',
+                borderRadius: 2,
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(148, 163, 184, 0.3)',
+                  borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'rgba(148, 163, 184, 0.5)',
@@ -1196,9 +1202,9 @@ function PurchaseHistory() {
           <TableContainer
             component={Paper}
             sx={{
-              backgroundColor: '#0f172a',
+              backgroundColor: isDark ? '#0f172a' : '#ffffff',
               borderRadius: 2,
-              border: '1px solid rgba(148, 163, 184, 0.25)',
+              border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
               flexGrow: 1,
               overflow: 'auto',
               minHeight: 0,
@@ -1212,9 +1218,9 @@ function PurchaseHistory() {
                 <TableRow>
                   <TableCell
                     sx={{
-                      backgroundColor: '#1e293b',
-                      color: '#e5e7eb',
-                      fontWeight: 600,
+                      backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                      color: '#ffffff',
+                      fontWeight: 700,
                       borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     }}
                   >
@@ -1222,9 +1228,9 @@ function PurchaseHistory() {
                   </TableCell>
                   <TableCell
                     sx={{
-                      backgroundColor: '#1e293b',
-                      color: '#e5e7eb',
-                      fontWeight: 600,
+                      backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                      color: '#ffffff',
+                      fontWeight: 700,
                       borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     }}
                   >
@@ -1232,9 +1238,9 @@ function PurchaseHistory() {
                   </TableCell>
                   <TableCell
                     sx={{
-                      backgroundColor: '#1e293b',
-                      color: '#e5e7eb',
-                      fontWeight: 600,
+                      backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                      color: '#ffffff',
+                      fontWeight: 700,
                       borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     }}
                   >
@@ -1242,9 +1248,9 @@ function PurchaseHistory() {
                   </TableCell>
                   <TableCell
                     sx={{
-                      backgroundColor: '#1e293b',
-                      color: '#e5e7eb',
-                      fontWeight: 600,
+                      backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                      color: '#ffffff',
+                      fontWeight: 700,
                       borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     }}
                   >
@@ -1252,9 +1258,9 @@ function PurchaseHistory() {
                   </TableCell>
                   <TableCell
                     sx={{
-                      backgroundColor: '#1e293b',
-                      color: '#e5e7eb',
-                      fontWeight: 600,
+                      backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                      color: '#ffffff',
+                      fontWeight: 700,
                       borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                       textAlign: 'center',
                     }}
@@ -1792,21 +1798,21 @@ function PurchaseHistory() {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: '#0f172a',
-            color: '#e5e7eb',
+            backgroundColor: isDark ? '#0f172a' : '#ffffff',
+            color: isDark ? '#e5e7eb' : '#0f172a',
             borderRadius: 2,
-            border: '1px solid rgba(148, 163, 184, 0.25)',
+            border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
             maxHeight: '90vh',
           },
         }}
       >
         <DialogTitle
           sx={{
-            color: '#e5e7eb',
+            color: isDark ? '#e5e7eb' : '#0f172a',
             fontWeight: 600,
             pb: 2,
             fontSize: '1.25rem',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+            borderBottom: isDark ? '1px solid rgba(148, 163, 184, 0.1)' : '1px solid #e2e8f0',
           }}
         >
           New Purchase
@@ -1859,18 +1865,18 @@ function PurchaseHistory() {
                         sx={{
                           mt: 4,
                           '& .MuiOutlinedInput-root': {
-                            backgroundColor: '#0f2339',
-                            color: '#e5e7eb',
+                            backgroundColor: isDark ? '#0f2339' : '#f8fafc',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
                             borderRadius: 1,
                           },
                           '& .MuiInputLabel-root': {
-                            color: '#9ca3af',
+                            color: isDark ? '#9ca3af' : '#475569',
                           },
                           '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(148, 163, 184, 0.3)',
+                            borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                           },
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(148, 163, 184, 0.5)',
+                            borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                             borderColor: '#10b981',
@@ -1880,14 +1886,14 @@ function PurchaseHistory() {
                           ...params.InputProps,
                           sx: {
                             ...params.InputProps.sx,
-                            color: '#e5e7eb',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
                           },
                         }}
                       />
                     )}
                     noOptionsText={loadingSuppliers ? 'Loading suppliers...' : 'No suppliers found'}
                     PaperComponent={({ children, ...other }) => (
-                      <Paper {...other} sx={{ backgroundColor: '#1e293b', color: '#e5e7eb' }}>
+                      <Paper {...other} sx={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', color: isDark ? '#e5e7eb' : '#0f172a' }}>
                         {children}
                       </Paper>
                     )}
@@ -1903,15 +1909,15 @@ function PurchaseHistory() {
                     required
                     InputProps={{
                       sx: {
-                        color: '#e5e7eb',
+                        color: isDark ? '#e5e7eb' : '#0f172a',
                         mt: 4,
-                        backgroundColor: '#0f2339',
+                        backgroundColor: isDark ? '#0f2339' : '#f8fafc',
                         borderRadius: 1,
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(148, 163, 184, 0.3)',
+                          borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(148, 163, 184, 0.5)',
+                          borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                           borderColor: '#10b981',
@@ -1929,23 +1935,23 @@ function PurchaseHistory() {
                     onChange={(e) => handlePurchaseFormChange('invoiceDate', e.target.value)}
                     size="small"
                     required
-                    InputLabelProps={{ sx: { color: '#9ca3af', mt: 4 }, shrink: true }}
+                    InputLabelProps={{ sx: { color: isDark ? '#9ca3af' : '#475569', mt: 4 }, shrink: true }}
                     InputProps={{
                       inputRef: invoiceDateRef,
                       sx: {
-                        color: '#e5e7eb',
+                        color: isDark ? '#e5e7eb' : '#0f172a',
                         mt: 4,
-                        backgroundColor: '#0f2339',
+                        backgroundColor: isDark ? '#0f2339' : '#f8fafc',
                         borderRadius: 1,
                         pr: 0,
                         '& input[type="date"]::-webkit-calendar-picker-indicator': {
                           display: 'none',
                         },
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(148, 163, 184, 0.3)',
+                          borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(148, 163, 184, 0.5)',
+                          borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                           borderColor: '#10b981',
@@ -1954,7 +1960,7 @@ function PurchaseHistory() {
                       endAdornment: (
                         <IconButton
                           size="small"
-                          sx={{ color: '#9ca3af' }}
+                          sx={{ color: isDark ? '#9ca3af' : '#475569' }}
                           onClick={() => {
                             if (invoiceDateRef.current) {
                               if (typeof invoiceDateRef.current.showPicker === 'function') {
@@ -1973,7 +1979,7 @@ function PurchaseHistory() {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ my: 2, borderColor: 'rgba(148, 163, 184, 0.4)' }} />
+              <Divider sx={{ my: 2, borderColor: isDark ? 'rgba(148, 163, 184, 0.4)' : '#e2e8f0' }} />
 
               {/* Product Table Headers */}
               <Box
@@ -1995,8 +2001,8 @@ function PurchaseHistory() {
                     mb: 1.5,
                     p: 1,
                     borderRadius: 1.5,
-                    background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.6))',
-                    border: '1px solid rgba(148,163,184,0.25)',
+                    background: isDark ? 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.6))' : '#f1f5f9',
+                    border: isDark ? '1px solid rgba(148,163,184,0.25)' : '1px solid #cbd5e1',
                   }}
                 >
                   <Grid container spacing={1} alignItems="center">
@@ -2067,7 +2073,7 @@ function PurchaseHistory() {
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            placeholder="Select or enter pr..."
+                            placeholder="Select or enter product..."
                             size="small"
                             required
                             fullWidth
@@ -2076,14 +2082,14 @@ function PurchaseHistory() {
                               sx: {
                                 width: '200px',
                                 height: '40px',
-                                color: '#e5e7eb',
-                                backgroundColor: '#020617',
+                                color: isDark ? '#e5e7eb' : '#0f172a',
+                                backgroundColor: isDark ? '#020617' : '#ffffff',
                                 borderRadius: 1,
                                 '& .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: 'rgba(148, 163, 184, 0.3)',
+                                  borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                                 },
                                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: 'rgba(148, 163, 184, 0.5)',
+                                  borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                                 },
                                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                   borderColor: '#10b981',
@@ -2094,24 +2100,24 @@ function PurchaseHistory() {
                         )}
                         sx={{
                           '& .MuiAutocomplete-popupIndicator': {
-                            color: '#9ca3af',
+                            color: isDark ? '#9ca3af' : '#475569',
                           },
                           '& .MuiAutocomplete-clearIndicator': {
-                            color: '#9ca3af',
+                            color: isDark ? '#9ca3af' : '#475569',
                           },
                           '& .MuiAutocomplete-option': {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             '&:hover': {
-                              backgroundColor: '#0f2339',
+                              backgroundColor: isDark ? '#0f2339' : '#f1f5f9',
                             },
                             '&[aria-selected="true"]': {
-                              backgroundColor: '#0f2339',
+                              backgroundColor: isDark ? '#0f2339' : '#e2e8f0',
                             },
                           },
                           '& .MuiAutocomplete-listbox': {
-                            backgroundColor: '#020617',
-                            border: '1px solid rgba(148, 163, 184, 0.3)',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
+                            border: isDark ? '1px solid rgba(148, 163, 184, 0.3)' : '1px solid #cbd5e1',
                           },
                         }}
                       />
@@ -2126,14 +2132,14 @@ function PurchaseHistory() {
                         required
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
@@ -2153,14 +2159,14 @@ function PurchaseHistory() {
                         required
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
@@ -2180,14 +2186,14 @@ function PurchaseHistory() {
                         required
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
@@ -2206,23 +2212,22 @@ function PurchaseHistory() {
                         size="small"
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
                             },
                           },
                         }}
-                        // helperText="Optional"
                         FormHelperTextProps={{
-                          sx: { color: '#9ca3af', fontSize: '0.7rem', mt: 0.5 },
+                          sx: { color: isDark ? '#9ca3af' : '#475569', fontSize: '0.7rem', mt: 0.5 },
                         }}
                       />
                     </Grid>
@@ -2237,14 +2242,14 @@ function PurchaseHistory() {
                         required
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
@@ -2263,23 +2268,22 @@ function PurchaseHistory() {
                         size="small"
                         InputProps={{
                           sx: {
-                            color: '#e5e7eb',
-                            backgroundColor: '#020617',
+                            color: isDark ? '#e5e7eb' : '#0f172a',
+                            backgroundColor: isDark ? '#020617' : '#ffffff',
                             borderRadius: 1,
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.3)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(148, 163, 184, 0.5)',
+                              borderColor: isDark ? 'rgba(148, 163, 184, 0.5)' : '#94a3b8',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#10b981',
                             },
                           },
                         }}
-                        // helperText="Optional"
                         FormHelperTextProps={{
-                          sx: { color: '#9ca3af', fontSize: '0.7rem', mt: 0.5 },
+                          sx: { color: isDark ? '#9ca3af' : '#475569', fontSize: '0.7rem', mt: 0.5 },
                         }}
                       />
                     </Grid>
@@ -2289,7 +2293,7 @@ function PurchaseHistory() {
                         onClick={() => removePurchaseRow(row.id)}
                         disabled={purchaseRows.length === 1}
                         sx={{
-                          color: purchaseRows.length === 1 ? '#4b5563' : '#9ca3af',
+                          color: purchaseRows.length === 1 ? '#4b5563' : (isDark ? '#9ca3af' : '#475569'),
                           '&:hover': {
                             backgroundColor: purchaseRows.length === 1 ? 'transparent' : 'rgba(239, 68, 68, 0.15)',
                             color: purchaseRows.length === 1 ? '#4b5563' : '#ef4444',
@@ -2309,8 +2313,9 @@ function PurchaseHistory() {
                   onClick={addPurchaseRow}
                   sx={{
                     textTransform: 'none',
-                    color: '#e5e7eb',
-                    borderColor: 'rgba(148,163,184,0.6)',
+                    borderRadius: '24px',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderColor: isDark ? 'rgba(148,163,184,0.6)' : '#cbd5e1',
                     '&:hover': { borderColor: '#0ea5e9', color: '#0ea5e9' },
                   }}
                 >
@@ -2321,6 +2326,7 @@ function PurchaseHistory() {
                   onClick={handlePurchaseRecalculate}
                   sx={{
                     textTransform: 'none',
+                    borderRadius: '24px',
                     backgroundColor: '#0ea5e9',
                     '&:hover': { backgroundColor: '#0284c7' },
                   }}
@@ -2331,7 +2337,7 @@ function PurchaseHistory() {
 
               {/* File Upload Section */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 0.5 }}>
+                <Typography variant="body2" sx={{ color: isDark ? '#cbd5e1' : '#475569', mb: 0.5 }}>
                   Attach Invoice (images/pdf) <span style={{ color: '#ef4444' }}>*</span>
                 </Typography>
                 <Button
@@ -2340,8 +2346,9 @@ function PurchaseHistory() {
                   required
                   sx={{
                     textTransform: 'none',
-                    color: '#e5e7eb',
-                    borderColor: (purchaseError && purchaseError.includes('invoice file') && !purchaseFormData.invoiceFile) ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                    borderRadius: '24px',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderColor: (purchaseError && purchaseError.includes('invoice file') && !purchaseFormData.invoiceFile) ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.2)' : '#cbd5e1'),
                     '&:hover': { borderColor: '#0ea5e9', color: '#0ea5e9' },
                   }}
                 >
@@ -2357,7 +2364,7 @@ function PurchaseHistory() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: (purchaseError && purchaseError.includes('invoice file') && !purchaseFormData.invoiceFile) ? '#ef4444' : '#cbd5e1',
+                    color: (purchaseError && purchaseError.includes('invoice file') && !purchaseFormData.invoiceFile) ? '#ef4444' : (isDark ? '#cbd5e1' : '#475569'),
                     ml: 1,
                     display: 'inline-block'
                   }}
@@ -2372,7 +2379,7 @@ function PurchaseHistory() {
           sx={{
             p: 2.5,
             pt: 1,
-            borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+            borderTop: isDark ? '1px solid rgba(148, 163, 184, 0.1)' : '1px solid #e2e8f0',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -2380,19 +2387,26 @@ function PurchaseHistory() {
         >
           <Typography
             variant="body2"
-            sx={{ color: '#cbd5e1', fontSize: '1.1rem', fontWeight: 600 }}
+            sx={{ color: isDark ? '#cbd5e1' : '#0f172a', fontSize: '1.1rem', fontWeight: 600 }}
           >
             Net: ₹{netTotal.toFixed(2)}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
+              variant="outlined"
               onClick={() => {
                 setAddPurchaseModalOpen(false);
                 handlePurchaseClear();
               }}
-              sx={{ color: '#9ca3af', textTransform: 'none' }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: '24px',
+                color: isDark ? '#e5e7eb' : '#0f172a',
+                borderColor: isDark ? 'rgba(148,163,184,0.6)' : '#cbd5e1',
+                '&:hover': { borderColor: '#ef4444', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.08)' },
+              }}
             >
-              Clear
+              Cancel
             </Button>
             <Button
               onClick={handlePurchaseSubmit}
@@ -2400,11 +2414,12 @@ function PurchaseHistory() {
               variant="contained"
               sx={{
                 textTransform: 'none',
+                borderRadius: '24px',
                 backgroundColor: '#0ea5e9',
                 '&:hover': { backgroundColor: '#0284c7' },
               }}
             >
-              {purchaseLoading ? <CircularProgress size={20} /> : 'Save Purchase'}
+              {purchaseLoading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Save Purchase'}
             </Button>
           </Box>
         </DialogActions>

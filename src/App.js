@@ -56,22 +56,11 @@ import LiveChatSupport from './panels/seller/pages/LiveChatSupport';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import Login from './pages/Login';
 import { ROLE_IDS } from './constants/roles';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#2f855a',
-    },
-    secondary: {
-      main: '#6b46c1',
-    },
-  },
-});
+import { CustomThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <CustomThemeProvider>
       <BrowserRouter>
         <Routes>
           <Route index element={<Navigate to="/login" replace />} />
@@ -192,7 +181,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
-    </ThemeProvider>
+    </CustomThemeProvider>
   );
 }
 

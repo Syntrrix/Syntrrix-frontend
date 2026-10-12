@@ -21,6 +21,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 function TeamNavbar({ drawerWidth }) {
   const { toggleSidebar, isCollapsed } = useSidebar();
@@ -68,7 +69,8 @@ function TeamNavbar({ drawerWidth }) {
             {user?.role?.name || 'Team'} Dashboard
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <ThemeToggle size="small" />
           <IconButton
             onClick={(e) => setAnchorEl(e.currentTarget)}
             sx={{

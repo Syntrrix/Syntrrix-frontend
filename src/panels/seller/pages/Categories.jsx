@@ -31,8 +31,10 @@ import {
   updateCategory,
   deleteCategory,
 } from '../../../api/categories';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function Categories() {
+  const { isDark } = useThemeContext();
   const [categories, setCategories] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -212,15 +214,17 @@ function Categories() {
     <Box
       sx={{
         p: { xs: 2, md: 3 },
-        backgroundColor: '#0b1624',
-        color: '#e5e7eb',
+        backgroundColor: isDark ? '#0b1624' : '#f1f5f9',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         minHeight: '100vh',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#0f1f33',
-          border: '1px solid rgba(255,255,255,0.06)',
+          backgroundColor: isDark ? '#0f1f33' : '#ffffff',
+          border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? 'none' : '0 10px 30px rgba(0,0,0,0.05)',
         }}
       >
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>

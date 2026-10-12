@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Card, CardContent, CircularProgress, Grid, Typography } from '@mui/material';
 import { fetchSellerLiveChatSupportSessions } from '../../api/liveChat';
+import { useThemeContext } from '../../context/ThemeContext';
 
 function normalizePhone(value) {
   return String(value || '').replace(/\D+/g, '');
@@ -36,6 +37,7 @@ function dedupeSessionsByPhoneEmail(list) {
 }
 
 function AgentDashboard() {
+  const { isDark } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [totalLeads, setTotalLeads] = useState(0);
@@ -65,12 +67,13 @@ function AgentDashboard() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: 'calc(100vh - 64px)',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 2, color: '#e5e7eb' }}>
+      <Typography variant="h5" fontWeight={700} sx={{ mb: 2, color: isDark ? '#e5e7eb' : '#0f172a' }}>
         Agent Dashboard
       </Typography>
       {loading ? <CircularProgress size={22} sx={{ color: '#0ea5e9' }} /> : null}

@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { clearAuthState, getAccessToken } from '../utils/storage';
 
-
-
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/';
 
+// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.qa.syntrrix.com/api/';
 
 // Default for small JSON calls; heavy endpoints (e.g. bot flow) pass their own timeout.
 const DEFAULT_TIMEOUT = 30000;

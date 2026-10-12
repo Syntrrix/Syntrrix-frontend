@@ -49,8 +49,19 @@ export const fetchSellerLiveChatMessages = async (sessionId, limit = 50) => {
   return data;
 };
 
-// Seller: send a message to a session
-export const sendSellerLiveChatMessage = async (sessionId, message) => {
+// Seller: send a message (text and/or file attachment) to a session
+export const sendSellerLiveChatMessage = async (sessionId, message, file = null) => {
+  if (file) {
+    const formData = new FormData();
+    if (message) formData.append('message', message);
+    formData.append('file', file);
+    const { data } = await apiClient.post(`live-chat/messages/?session_id=${sessionId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  }
   const { data } = await apiClient.post(`live-chat/messages/?session_id=${sessionId}`, { message });
   return data;
 };

@@ -50,6 +50,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CallIcon from '@mui/icons-material/Call';
 import CheckIcon from '@mui/icons-material/Check';
+import DownloadIcon from '@mui/icons-material/Download';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import ImageIcon from '@mui/icons-material/Image';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import {
@@ -61,6 +65,18 @@ import {
 import { fetchTeamMembers } from '../../../api/teamManagement';
 import { fetchWhatsAppConfig, sendBulkWhatsAppTemplate, fetchWhatsAppTemplates, createWhatsAppCampaign } from '../../../api/whatsapp';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/';
+// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.qa.syntrrix.com/api/';
+
+const resolveMediaUrl = (url) => {
+  const raw = (url || '').toString().trim();
+  if (!raw) return '';
+  if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+  const origin = API_BASE_URL.replace(/\/api\/?$/, '');
+  return `${origin}${raw.startsWith('/') ? raw : `/${raw}`}`;
+};
 
 const DEFAULT_PIPELINE_TABS = ['All Leads', 'New Leads', 'Contacted', 'Qualified', 'Won', 'Lost'];
 const DEFAULT_PIPELINE_TAB_SET = new Set(DEFAULT_PIPELINE_TABS);
@@ -70,9 +86,10 @@ const LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY = 'lead_pipeline_custom_tabs';
 /** Matches LiveChatSession.lead_pipeline_status max_length (backend). */
 const MAX_PIPELINE_TAB_NAME_LEN = 40;
 
-function loadCustomPipelineTabs() {
+function loadCustomPipelineTabs(sellerKey = '') {
   try {
-    const raw = localStorage.getItem(LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY);
+    const key = sellerKey ? `${LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY}_${sellerKey}` : LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY;
+    const raw = localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -149,6 +166,36 @@ function formatCreated(rawIso) {
   });
 }
 
+function getTemplateHeaderType(tpl) {
+  if (!tpl) return 'TEXT';
+  const directType = String(
+    tpl.header_type || tpl.header_format || tpl.type || tpl.header_media_type || tpl.headerType || ''
+  ).toUpperCase();
+  if (['IMAGE', 'VIDEO', 'DOCUMENT', 'TEXT', 'LOCATION'].includes(directType)) {
+    return directType;
+  }
+  if (Array.isArray(tpl.components)) {
+    const headerComp = tpl.components.find((c) => c && String(c.type || '').toUpperCase() === 'HEADER');
+    if (headerComp) {
+      const format = String(headerComp.format || headerComp.header_type || '').toUpperCase();
+      if (['IMAGE', 'VIDEO', 'DOCUMENT', 'TEXT', 'LOCATION'].includes(format)) {
+        return format;
+      }
+    }
+  }
+  const mediaStr = String(tpl.header_media || tpl.media_url || tpl.header_media_url || tpl.file || '').toLowerCase();
+  if (mediaStr) {
+    if (/\.(jpg|jpeg|png|gif|webp)($|\?)/i.test(mediaStr) || mediaStr.includes('image')) return 'IMAGE';
+    if (/\.(mp4|mov|avi|webm)($|\?)/i.test(mediaStr) || mediaStr.includes('video')) return 'VIDEO';
+    if (/\.(pdf|doc|docx|csv|txt)($|\?)/i.test(mediaStr) || mediaStr.includes('document')) return 'DOCUMENT';
+  }
+  const nameStr = String(tpl.name || tpl.header_text || '').toLowerCase();
+  if (nameStr.includes('image') || nameStr.includes('img') || nameStr.includes('photo')) return 'IMAGE';
+  if (nameStr.includes('video')) return 'VIDEO';
+  if (nameStr.includes('pdf') || nameStr.includes('doc') || nameStr.includes('file')) return 'DOCUMENT';
+  return 'TEXT';
+}
+
 function getAddressFromSession(session) {
   const payload = session?.bot_payload && typeof session.bot_payload === 'object' ? session.bot_payload : {};
   if (typeof session?.address === 'string' && session.address.trim()) return session.address.trim();
@@ -188,9 +235,10 @@ function getAddressFromSession(session) {
   return '';
 }
 
-function loadSavedLeadPipelineMeta() {
+function loadSavedLeadPipelineMeta(sellerKey = '') {
   try {
-    const raw = localStorage.getItem(LEAD_PIPELINE_META_STORAGE_KEY);
+    const key = sellerKey ? `${LEAD_PIPELINE_META_STORAGE_KEY}_${sellerKey}` : LEAD_PIPELINE_META_STORAGE_KEY;
+    const raw = localStorage.getItem(key);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === 'object' ? parsed : {};
@@ -202,9 +250,9 @@ function loadSavedLeadPipelineMeta() {
 function LeadPipeline() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDark: isDarkTheme } = useThemeContext();
   const isSellerUser = user?.role?.id === 3;
   const isTeamPanelUser = user?.role?.id === 4 || user?.role?.id === 5;
-  const isDarkTheme = isSellerUser || isTeamPanelUser;
 
   // Advanced Send WhatsApp Drawer State & Handlers
   const [whatsAppDrawerOpen, setWhatsAppDrawerOpen] = useState(false);
@@ -217,7 +265,7 @@ function LeadPipeline() {
   const [templateList, setTemplateList] = useState([]);
   const [selectedTemplateName, setSelectedTemplateName] = useState('order_confirmation');
   const [selectedChannel, setSelectedChannel] = useState('');
-  const [channelsList] = useState(['WhatsApp', 'Instagram', 'Facebook']);
+  const [channelsList] = useState(['WhatsApp']);
   const [businessNumbersList, setBusinessNumbersList] = useState(['Syntrrix Main · +919000012345', 'Syntrrix Support · +919876543210']);
   const [selectedBusinessNumber, setSelectedBusinessNumber] = useState('');
   const [templateSearch, setTemplateSearch] = useState('');
@@ -293,7 +341,7 @@ function LeadPipeline() {
             setBusinessNumbersList(numbers);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
 
       fetchWhatsAppTemplates()
         .then((res) => {
@@ -304,7 +352,7 @@ function LeadPipeline() {
             }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [whatsAppDrawerOpen]);
 
@@ -377,8 +425,9 @@ function LeadPipeline() {
   const [agentFilter, setAgentFilter] = useState('All Agents');
   const [sourceFilter, setSourceFilter] = useState('All Sources');
   const [dateFilter, setDateFilter] = useState('');
+  const sellerKey = user?.id || user?.user_id || user?.email || 'guest';
   const [selectedIds, setSelectedIds] = useState([]);
-  const [metaBySession, setMetaBySession] = useState(loadSavedLeadPipelineMeta);
+  const [metaBySession, setMetaBySession] = useState(() => loadSavedLeadPipelineMeta(sellerKey));
   const [bulkAgent, setBulkAgent] = useState('');
   const [bulkStatus, setBulkStatus] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState('');
@@ -387,7 +436,7 @@ function LeadPipeline() {
   const [addTabModalOpen, setAddTabModalOpen] = useState(false);
   const [newTabName, setNewTabName] = useState('');
   const [addTabError, setAddTabError] = useState('');
-  const [customPipelineTabs, setCustomPipelineTabs] = useState(loadCustomPipelineTabs);
+  const [customPipelineTabs, setCustomPipelineTabs] = useState(() => loadCustomPipelineTabs(sellerKey));
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -435,15 +484,20 @@ function LeadPipeline() {
         const agentNames = agents
           .map((m) => String(m?.full_name || '').trim())
           .filter(Boolean);
-        const groupedAgents = agents.reduce((acc, agent) => {
+
+        const groupedAgents = {};
+        teamNames.forEach((tName) => {
+          groupedAgents[tName] = [];
+        });
+
+        agents.forEach((agent) => {
           const agentName = String(agent?.full_name || '').trim();
           const managerId = Number(agent?.assigned_team_manager?.id);
           const teamLabel = managerLabelByUserId[managerId] || String(agent?.assigned_team_manager?.name || '').trim();
-          if (!agentName || !teamLabel) return acc;
-          if (!acc[teamLabel]) acc[teamLabel] = [];
-          acc[teamLabel].push(agentName);
-          return acc;
-        }, {});
+          if (!agentName || !teamLabel) return;
+          if (!groupedAgents[teamLabel]) groupedAgents[teamLabel] = [];
+          groupedAgents[teamLabel].push(agentName);
+        });
         Object.keys(groupedAgents).forEach((team) => {
           groupedAgents[team] = Array.from(new Set(groupedAgents[team]));
         });
@@ -520,20 +574,29 @@ function LeadPipeline() {
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LEAD_PIPELINE_META_STORAGE_KEY, JSON.stringify(metaBySession));
-    } catch {
-      // Ignore storage write failures.
+    if (sellerKey) {
+      setCustomPipelineTabs(loadCustomPipelineTabs(sellerKey));
+      setMetaBySession(loadSavedLeadPipelineMeta(sellerKey));
     }
-  }, [metaBySession]);
+  }, [sellerKey]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY, JSON.stringify(customPipelineTabs));
+      const key = sellerKey ? `${LEAD_PIPELINE_META_STORAGE_KEY}_${sellerKey}` : LEAD_PIPELINE_META_STORAGE_KEY;
+      localStorage.setItem(key, JSON.stringify(metaBySession));
     } catch {
       // Ignore storage write failures.
     }
-  }, [customPipelineTabs]);
+  }, [metaBySession, sellerKey]);
+
+  useEffect(() => {
+    try {
+      const key = sellerKey ? `${LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY}_${sellerKey}` : LEAD_PIPELINE_CUSTOM_TABS_STORAGE_KEY;
+      localStorage.setItem(key, JSON.stringify(customPipelineTabs));
+    } catch {
+      // Ignore storage write failures.
+    }
+  }, [customPipelineTabs, sellerKey]);
 
   const mergeSessionFromApiRow = (row) => {
     if (!row || row.session_id == null) return;
@@ -578,15 +641,15 @@ function LeadPipeline() {
   const teamOptions = useMemo(() => sellerTeams, [sellerTeams]);
   const getAgentsForTeam = (team) => {
     const label = String(team || '').trim();
-    if (!label) return [];
-    const scoped = agentsByTeam[label] || [];
-    return scoped.length ? scoped : agentOptions;
+    if (!label) return agentOptions;
+    return agentsByTeam[label] || [];
   };
   const getAgentRowsForTeam = (teamLabel) => {
     const label = String(teamLabel || '').trim();
+    if (!label) return sellerAgents.map((name) => ({ label: name, userId: null }));
     const rows = agentsByTeamUserRows[label];
-    if (Array.isArray(rows) && rows.length) return rows;
-    return getAgentsForTeam(label).map((name) => ({ label: name, userId: null }));
+    if (Array.isArray(rows)) return rows;
+    return (agentsByTeam[label] || []).map((name) => ({ label: name, userId: null }));
   };
   const teamSelectValue = (lead) => {
     if (lead.assigned_team_manager_id) return String(lead.assigned_team_manager_id);
@@ -622,6 +685,10 @@ function LeadPipeline() {
 
   const handleLeadTeamChange = async (lead, e) => {
     setError('');
+    if (!isSellerUser) {
+      setError('Only sellers can change the Team Manager.');
+      return;
+    }
     const v = e.target.value;
     if (String(v) === String(teamSelectValue(lead))) return;
     if (!(await confirmTeamOrAgentChange('team'))) return;
@@ -677,6 +744,10 @@ function LeadPipeline() {
 
   const handleLeadAgentChange = async (lead, e) => {
     setError('');
+    if (!isSellerUser) {
+      setError('Only sellers can change the assigned Agent.');
+      return;
+    }
     const v = e.target.value;
     if (String(v) === String(agentSelectValue(lead))) return;
     if (!(await confirmTeamOrAgentChange('agent'))) return;
@@ -727,19 +798,31 @@ function LeadPipeline() {
 
   const bulkAgentOptions = useMemo(() => {
     const out = [];
-    const seen = new Set();
+    const seenValue = new Set();
+    const seenLabel = new Set();
+
     const push = (val, label) => {
-      const k = `${val}`;
-      if (!label || seen.has(k)) return;
-      seen.add(k);
-      out.push({ value: val, label });
+      const vStr = String(val || '').trim();
+      const lStr = String(label || '').trim();
+      if (!vStr || !lStr) return;
+      if (seenValue.has(vStr) || seenLabel.has(lStr.toLowerCase())) return;
+      seenValue.add(vStr);
+      seenLabel.add(lStr.toLowerCase());
+      out.push({ value: vStr, label: lStr });
     };
+
     Object.values(agentsByTeamUserRows)
       .flat()
       .forEach((r) => {
-        if (r?.userId) push(String(r.userId), r.label);
+        if (r?.userId && r?.label) {
+          push(String(r.userId), r.label);
+        }
       });
-    agentOptions.forEach((a) => push(a, a));
+
+    agentOptions.forEach((a) => {
+      push(a, a);
+    });
+
     return out;
   }, [agentsByTeamUserRows, agentOptions]);
 
@@ -778,12 +861,16 @@ function LeadPipeline() {
         team: local.team || session.assigned_team_manager_name || '',
         agent: local.agent || session.assigned_agent_name || '',
         status: resolveLeadPipelineStatus(session, local, statusOptions),
-        source:
-          local.source ||
-          (typeof payload.lead_source === 'string' && payload.lead_source.trim()
-            ? payload.lead_source.trim()
-            : '') ||
-          (session.whatsapp_number ? 'WhatsApp' : 'Website'),
+        source: (() => {
+          if (session.is_manual_pipeline_lead) return 'Manual lead';
+          if (typeof payload.lead_source === 'string' && payload.lead_source.trim()) {
+            return payload.lead_source.trim();
+          }
+          if (session.whatsapp_number || session.session_id_whatsapp || String(session.session_id || '').toLowerCase().includes('wa')) {
+            return 'WhatsApp';
+          }
+          return 'Website';
+        })(),
         company: local.company || (payload.company || payload.business || ''),
         cityState: local.cityState || (payload.city_state || payload.city || ''),
         country: local.country || (payload.country || ''),
@@ -831,7 +918,7 @@ function LeadPipeline() {
     extractedVariables.forEach((varKey) => {
       const cleanKey = varKey.replace(/[\{\}]/g, '').trim();
       const mapping = varMappings[cleanKey] || varMappings[varKey] || { type: 'field', value: 'name' };
-      
+
       let replacedVal = '';
       if (mapping.type === 'custom') {
         replacedVal = mapping.value || '';
@@ -885,103 +972,130 @@ function LeadPipeline() {
       return;
     }
 
-    setIsSendingWhatsApp(true);
-    try {
-      const recipients = selectedLeads.map((lead) => {
-        const cleanPhone = String(lead.phone || '').replace(/\D+/g, '');
-        return {
-          phone: cleanPhone
-        };
+    if (sendOption === 'schedule') {
+      if (!scheduledDateTime) {
+        void Swal.fire({
+          icon: 'warning',
+          title: 'Scheduled Date & Time Required',
+          text: 'Please select a Date and Time for the scheduled campaign.',
+          confirmButtonColor: isDarkTheme ? '#0ea5e9' : '#4f46e5',
+        });
+        return;
+      }
+      const selectedTimeMs = new Date(scheduledDateTime).getTime();
+      if (Number.isNaN(selectedTimeMs) || selectedTimeMs <= Date.now()) {
+        void Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Date & Time',
+          text: 'Scheduled Date & Time must be in the future.',
+          confirmButtonColor: isDarkTheme ? '#0ea5e9' : '#4f46e5',
+        });
+        return;
+      }
+    }
+
+    const isScheduled = sendOption === 'schedule' && scheduledDateTime;
+    const formattedScheduledTime = isScheduled
+      ? new Date(scheduledDateTime).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
+      : '';
+
+    const actualTemplateName = activeTemplateObj?.name || selectedTemplateName;
+    const actualLangCode = activeTemplateObj?.language || languageCode || 'en_US';
+
+    // Format varMappings dictionary: { "1": "name", "2": "email" } or { "1": "Custom Value" }
+    const formattedVarMapping = {};
+    if (varMappings && typeof varMappings === 'object') {
+      Object.entries(varMappings).forEach(([vk, mapping]) => {
+        const cleanKey = vk.replace(/[\{\}]/g, '').trim();
+        if (mapping && typeof mapping === 'object') {
+          if (mapping.type === 'custom') {
+            formattedVarMapping[cleanKey] = mapping.value || `Sample ${cleanKey}`;
+          } else {
+            formattedVarMapping[cleanKey] = mapping.value || 'name';
+          }
+        } else if (typeof mapping === 'string') {
+          formattedVarMapping[cleanKey] = mapping;
+        }
       });
+    }
 
-      const actualTemplateName = activeTemplateObj?.name || selectedTemplateName;
-      const actualLangCode = activeTemplateObj?.language || languageCode || 'en_US';
+    const recipientsPayload = selectedLeads.map((l) => ({
+      phone: String(l.phone || '').replace(/\D+/g, ''),
+      name: l.name || 'Recipient',
+      email: l.email || '',
+      address: l.address || '',
+      status: l.status || '',
+      agent: l.agent || '',
+      team: l.team || '',
+      source: l.source || '',
+      company: l.company || '',
+      cityState: l.cityState || '',
+      country: l.country || '',
+      id: String(l.id || ''),
+      createdAt: l.createdAt || '',
+    }));
 
-      const resp = await sendBulkWhatsAppTemplate({
+    const targetLeadCount = recipientsPayload.length;
+    const dispatchedTitle = campaignName.trim();
+
+    // Close drawer immediately without buffering!
+    setIsSendingWhatsApp(false);
+    setWhatsAppDrawerOpen(false);
+    setSelectedIds([]);
+
+    if (isScheduled) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Campaign Scheduled Successfully!',
+        text: `Campaign "${dispatchedTitle}" is scheduled for ${formattedScheduledTime} for ${targetLeadCount} leads.`,
+        timer: 4000,
+        showConfirmButton: false,
+        background: '#090d16',
+        color: '#ffffff',
+      });
+    } else {
+      Swal.fire({
+        icon: 'success',
+        title: 'Campaign Bulk Dispatch Started!',
+        text: `Campaign "${dispatchedTitle}" initiated for ${targetLeadCount} leads. Status: Running in background.`,
+        timer: 3500,
+        showConfirmButton: false,
+        background: '#090d16',
+        color: '#ffffff',
+      });
+    }
+
+    const resolvedConfigId = activeTemplateObj?.whatsapp_config_id || activeTemplateObj?.config_id || null;
+
+    // Fire backend API asynchronously
+    try {
+      await sendBulkWhatsAppTemplate({
+        campaign_title: dispatchedTitle,
+        title: dispatchedTitle,
+        subtitle: `Lead Pipeline · ${actualTemplateName}`,
+        author: 'By you (Lead Pipeline)',
         template_name: actualTemplateName,
         language_code: actualLangCode,
         use_template: useTemplate,
         custom_text: customText,
-        recipients: recipients
+        var_mapping: formattedVarMapping,
+        recipients: recipientsPayload,
+        business_number: selectedBusinessNumber || '',
+        channel_name: selectedChannel || '',
+        config_id: resolvedConfigId,
+        whatsapp_config_id: resolvedConfigId,
+        send_option: sendOption,
+        scheduled_at: isScheduled ? scheduledDateTime : null,
       });
-
-      const errList = Array.isArray(resp?.errors) ? resp.errors : [];
-      const hasErrors = errList.length > 0 || (resp?.failed_count && resp.failed_count > 0);
-      const sentCount = resp?.sent_count ?? (hasErrors ? 0 : recipients.length);
-
-      // Save campaign to Database
-      const totalCount = recipients.length;
-      const failedCount = resp?.failed_count ?? (totalCount - sentCount);
-      const readCount = Math.round(sentCount * 0.85);
-      const recipientsLogPayload = selectedLeads.map((l) => ({
-        phone: String(l.phone || '').replace(/\D+/g, ''),
-        name: l.name || 'Recipient',
-        sent_status: true,
-      }));
-
-      try {
-        await createWhatsAppCampaign({
-          title: campaignName.trim(),
-          status: hasErrors && sentCount === 0 ? 'Failed' : 'Completed',
-          subtitle: `Lead Pipeline · ${actualTemplateName}`,
-          business_number: selectedBusinessNumber || 'Syntrrix Main · +919000012345',
-          template_name: actualTemplateName,
-          channel_name: selectedChannel || 'WhatsApp',
-          audience: totalCount,
-          sent: `${sentCount}`,
-          delivered: `${sentCount}/${totalCount}`,
-          read: `${readCount}/${sentCount}`,
-          failed: `${failedCount}`,
-          author: 'By you (Lead Pipeline)',
-          recipients_data: recipientsLogPayload,
-        });
-      } catch (apiErr) {
-        console.error('Failed to save campaign to DB:', apiErr);
-      }
-
-      if (resp?.success && !hasErrors) {
-        setWhatsAppDrawerOpen(false);
-        setSelectedIds([]);
-        await Swal.fire({
-          icon: 'success',
-          title: 'Bulk WhatsApp Campaign Dispatched!',
-          text: resp.message || `Campaign "${campaignName.trim()}" successfully sent to ${recipients.length} leads.`,
-          confirmButtonColor: isDarkTheme ? '#0ea5e9' : '#4f46e5'
-        });
-      } else if (hasErrors) {
-        setWhatsAppDrawerOpen(false);
-        const sentCount = resp?.sent_count ?? 0;
-        const failedCount = resp?.failed_count ?? recipients.length;
-        
-        const errorItemsHtml = errList.length > 0
-          ? errList.map((err) => `<li style="margin-bottom:6px;">${err}</li>`).join('')
-          : `<li>${resp?.message || 'Meta Cloud API rejected template delivery.'}</li>`;
-
-        await Swal.fire({
-          icon: sentCount > 0 ? 'warning' : 'error',
-          title: sentCount > 0 ? 'Campaign Completed with Failures' : 'WhatsApp Delivery Failed',
-          html: `
-            <div style="text-align: left; font-size: 13px; color: #1e293b; font-family: sans-serif;">
-              <p style="margin-bottom: 8px; font-weight: 600; color: #334155;"><b>Status:</b> Sent: <span style="color: #16a34a; font-weight:700;">${sentCount}</span> | Failed: <span style="color: #dc2626; font-weight:700;">${failedCount}</span></p>
-              <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;" />
-              <p style="font-weight: 700; color: #dc2626; margin-bottom: 6px;">Error Reasons:</p>
-              <ul style="padding-left: 18px; margin: 0; color: #0f172a; font-weight: 600; line-height: 1.5;">
-                ${errorItemsHtml}
-              </ul>
-            </div>
-          `,
-          confirmButtonColor: '#0ea5e9'
-        });
-      } else {
-        throw new Error(resp?.message || 'Failed to dispatch messages.');
-      }
-    } catch (e) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Campaign Failed',
-        text: e.message || 'An error occurred during bulk messaging.',
-        confirmButtonColor: isDarkTheme ? '#0ea5e9' : '#4f46e5'
-      });
+    } catch (apiErr) {
+      console.error('Failed to trigger background campaign dispatch:', apiErr);
     } finally {
       setIsSendingWhatsApp(false);
     }
@@ -1017,9 +1131,14 @@ function LeadPipeline() {
     return filteredLeads.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredLeads, page, rowsPerPage]);
 
-  const allSelected = paginatedLeads.length > 0 && paginatedLeads.every((r) => selectedIds.includes(r.id));
+  const allSelected = filteredLeads.length > 0 && filteredLeads.every((r) => selectedIds.includes(r.id));
+  const isSomeSelected = filteredLeads.some((r) => selectedIds.includes(r.id)) && !allSelected;
 
   const applyBulkAgent = async () => {
+    if (!isSellerUser) {
+      setError('Only sellers can change the assigned Agent.');
+      return;
+    }
     if (!bulkAgent || selectedIds.length === 0) return;
     setError('');
     const hits = pipelineLeads.filter((lead) => selectedIds.includes(lead.id));
@@ -1233,6 +1352,176 @@ function LeadPipeline() {
     });
   };
 
+  const confirmDeleteTab = async (tabToDelete) => {
+    if (!tabToDelete || !customPipelineTabs.includes(tabToDelete)) return;
+
+    const res = await Swal.fire({
+      title: 'Delete tab?',
+      text: `Are you sure you want to delete '${tabToDelete}' tab? All leads in this tab will be moved to 'New Leads'.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#dc2626',
+      background: isDarkTheme ? '#090d16' : '#ffffff',
+      color: isDarkTheme ? '#f8fafc' : '#111827',
+    });
+
+    if (!res.isConfirmed) return;
+
+    try {
+      const affectedSessions = chatSessions.filter(
+        (s) =>
+          String(s.lead_pipeline_status || '').trim() === tabToDelete ||
+          String(metaBySession[String(s.session_id)]?.status || '').trim() === tabToDelete
+      );
+
+      for (const s of affectedSessions) {
+        try {
+          await patchLiveChatSupportSession(s.session_id, { lead_pipeline_status: 'New Leads' });
+          updateLeadField({ session_id: s.session_id }, 'status', 'New Leads');
+        } catch (e) {
+          console.error('Failed to update session status on tab delete:', e);
+        }
+      }
+
+      setCustomPipelineTabs((prev) => prev.filter((t) => t !== tabToDelete));
+
+      if (activeTab === tabToDelete) {
+        setActiveTab('New Leads');
+      }
+
+      await loadSessions();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Tab Deleted',
+        text: `Tab '${tabToDelete}' deleted successfully. Leads moved to 'New Leads'.`,
+        timer: 2000,
+        showConfirmButton: false,
+        background: isDarkTheme ? '#090d16' : '#ffffff',
+        color: isDarkTheme ? '#f8fafc' : '#111827',
+      });
+    } catch (err) {
+      console.error('Error deleting tab:', err);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Delete') {
+        const activeEl = document.activeElement;
+        const isInput =
+          activeEl &&
+          (activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            activeEl.isContentEditable);
+        if (!isInput && customPipelineTabs.includes(activeTab)) {
+          e.preventDefault();
+          void confirmDeleteTab(activeTab);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, customPipelineTabs, isDarkTheme, chatSessions, metaBySession]);
+
+  const loadSheetJSLibrary = () => {
+    return new Promise((resolve) => {
+      if (window.XLSX) return resolve(window.XLSX);
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.onload = () => resolve(window.XLSX);
+      script.onerror = () => resolve(null);
+      document.head.appendChild(script);
+    });
+  };
+
+  const handleExportExcel = async () => {
+    const targetLeads = selectedIds.length > 0
+      ? pipelineLeads.filter((lead) => selectedIds.includes(lead.id))
+      : filteredLeads;
+
+    if (!targetLeads || targetLeads.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No Leads to Export',
+        text: 'There are no leads available to export.',
+        background: isDarkTheme ? '#090d16' : '#ffffff',
+        color: isDarkTheme ? '#f8fafc' : '#111827',
+      });
+      return;
+    }
+
+    try {
+      const XLSX = await loadSheetJSLibrary();
+      const rowsToExport = targetLeads.map((lead) => ({
+        'Lead ID': lead.id || '',
+        'Created Date': lead.createdAt || '',
+        'Name': lead.name || '',
+        'Phone': lead.phone || '',
+        'Email': lead.email || '',
+        'Address': lead.address || '',
+        'Team': lead.team || '',
+        'Agent': lead.agent || '',
+        'Status': lead.status || '',
+        'Source': lead.source || '',
+        'Company': lead.company || '',
+        'City / State': lead.cityState || '',
+        'Country': lead.country || '',
+      }));
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const fileName = `lead_pipeline_export_${dateStr}.xlsx`;
+
+      if (XLSX) {
+        const worksheet = XLSX.utils.json_to_sheet(rowsToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Lead Pipeline');
+        XLSX.writeFile(workbook, fileName);
+      } else {
+        const headers = Object.keys(rowsToExport[0]);
+        const csvRows = [headers.join(',')];
+        rowsToExport.forEach((row) => {
+          const values = headers.map((h) => {
+            const val = String(row[h] || '').replace(/"/g, '""');
+            return `"${val}"`;
+          });
+          csvRows.push(values.join(','));
+        });
+        const csvContent = '\uFEFF' + csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `lead_pipeline_export_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Excel Export Completed!',
+        text: `Exported ${targetLeads.length} leads successfully with exact character encoding.`,
+        timer: 2200,
+        showConfirmButton: false,
+        background: isDarkTheme ? '#090d16' : '#ffffff',
+        color: isDarkTheme ? '#f8fafc' : '#111827',
+      });
+    } catch (err) {
+      console.error('Export excel error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Export Failed',
+        text: 'Failed to export Excel file. Please try again.',
+        background: isDarkTheme ? '#090d16' : '#ffffff',
+        color: isDarkTheme ? '#f8fafc' : '#111827',
+      });
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -1300,6 +1589,37 @@ function LeadPipeline() {
                 <Box component="span" sx={{ ml: 0.7, px: 0.75, borderRadius: 999, fontSize: 11, bgcolor: active ? 'rgba(255,255,255,0.18)' : (isDarkTheme ? 'rgba(148,163,184,0.2)' : '#f3f4f6') }}>
                   {counts[tab]}
                 </Box>
+                {customPipelineTabs.includes(tab) ? (
+                  <Box
+                    component="span"
+                    role="button"
+                    title={`Delete ${tab} tab`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void confirmDeleteTab(tab);
+                    }}
+                    sx={{
+                      ml: 0.8,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 16,
+                      height: 16,
+                      borderRadius: '50%',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      color: active ? '#ffffff' : (isDarkTheme ? '#fca5a5' : '#ef4444'),
+                      bgcolor: active ? 'rgba(255,255,255,0.25)' : (isDarkTheme ? 'rgba(239, 68, 68, 0.2)' : '#fee2e2'),
+                      '&:hover': {
+                        bgcolor: '#ef4444',
+                        color: '#ffffff',
+                      },
+                    }}
+                  >
+                    ×
+                  </Box>
+                ) : null}
               </Button>
             );
           })}
@@ -1383,6 +1703,24 @@ function LeadPipeline() {
             >
               Send WhatsApp
             </Button>
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<DownloadIcon />}
+              onClick={() => void handleExportExcel()}
+              sx={{
+                textTransform: 'none',
+                bgcolor: '#10b981',
+                color: '#ffffff',
+                fontWeight: 700,
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                '&:hover': {
+                  bgcolor: '#059669',
+                },
+              }}
+            >
+              Download Excel
+            </Button>
             <Select size="small" value={bulkAgent} displayEmpty onChange={(e) => setBulkAgent(e.target.value)} sx={{ minWidth: 150 }}>
               <MenuItem value="">Assign Agent...</MenuItem>
               {bulkAgentOptions.map((opt) => (
@@ -1428,7 +1766,20 @@ function LeadPipeline() {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: isDarkTheme ? '#1e293b' : '#fafafa' }}>
-                <TableCell padding="checkbox"><Checkbox size="small" checked={allSelected} onChange={(e) => setSelectedIds(e.target.checked ? Array.from(new Set([...selectedIds, ...paginatedLeads.map((r) => r.id)])) : selectedIds.filter((id) => !paginatedLeads.map((r) => r.id).includes(id)))} /></TableCell>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    size="small"
+                    checked={allSelected}
+                    indeterminate={isSomeSelected}
+                    onChange={(e) =>
+                      setSelectedIds(
+                        e.target.checked
+                          ? Array.from(new Set([...selectedIds, ...filteredLeads.map((r) => r.id)]))
+                          : selectedIds.filter((id) => !filteredLeads.map((r) => r.id).includes(id))
+                      )
+                    }
+                  />
+                </TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Lead ID</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Created</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
@@ -1475,16 +1826,16 @@ function LeadPipeline() {
                       >
                         <MenuItem value="">{SELECT_TEAM_PLACEHOLDER}</MenuItem>
                         {teamPickerRows.length
-                           ? teamPickerRows.map((t) => (
-                               <MenuItem key={t.userId} value={String(t.userId)}>
-                                 {t.label}
-                               </MenuItem>
-                             ))
-                           : teamOptions.map((team) => (
-                               <MenuItem key={team} value={team}>
-                                 {team}
-                               </MenuItem>
-                             ))}
+                          ? teamPickerRows.map((t) => (
+                            <MenuItem key={t.userId} value={String(t.userId)}>
+                              {t.label}
+                            </MenuItem>
+                          ))
+                          : teamOptions.map((team) => (
+                            <MenuItem key={team} value={team}>
+                              {team}
+                            </MenuItem>
+                          ))}
                       </Select>
                     )}
                   </TableCell>
@@ -1523,17 +1874,35 @@ function LeadPipeline() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <Select size="small" value={lead.source} onChange={(e) => setMetaBySession((prev) => ({ ...prev, [String(lead.session_id)]: { ...(prev[String(lead.session_id)] || {}), source: e.target.value } }))}>
-                      {SOURCE_OPTIONS.map((source) => (
-                        <MenuItem key={source} value={source}>{source}</MenuItem>
-                      ))}
-                    </Select>
+                    <Chip
+                      label={lead.source || 'Website'}
+                      size="small"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.74rem',
+                        height: 24,
+                        bgcolor:
+                          lead.source === 'WhatsApp'
+                            ? 'rgba(37, 211, 102, 0.15)'
+                            : lead.source === 'Website'
+                              ? 'rgba(56, 189, 248, 0.15)'
+                              : lead.source === 'Manual lead'
+                                ? 'rgba(168, 85, 247, 0.15)'
+                                : 'rgba(148, 163, 184, 0.15)',
+                        color:
+                          lead.source === 'WhatsApp'
+                            ? '#25d366'
+                            : lead.source === 'Website'
+                              ? '#38bdf8'
+                              : lead.source === 'Manual lead'
+                                ? '#c084fc'
+                                : '#94a3b8',
+                        border: '1px solid currentColor',
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Stack direction="row" spacing={0.8}>
-                      <IconButton size="small"><ChatBubbleOutlineIcon fontSize="inherit" /></IconButton>
-                      <IconButton size="small"><BookmarkBorderIcon fontSize="inherit" /></IconButton>
-                      <IconButton size="small"><SendIcon fontSize="inherit" /></IconButton>
                       <IconButton
                         size="small"
                         onClick={() => {
@@ -1619,13 +1988,14 @@ function LeadPipeline() {
                 fullWidth
                 label="Assign Team"
                 value={newLead.team}
+                disabled={!isSellerUser}
                 onChange={(e) => {
                   const selectedTeam = e.target.value;
                   const scopedAgents = getAgentsForTeam(selectedTeam);
                   setNewLead((p) => ({
                     ...p,
                     team: selectedTeam,
-                    agent: scopedAgents.includes(p.agent) ? p.agent : (scopedAgents[0] || ''),
+                    agent: scopedAgents.includes(p.agent) ? p.agent : '',
                   }));
                 }}
               >
@@ -1636,7 +2006,7 @@ function LeadPipeline() {
               </TextField>
             </Stack>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
-              <TextField select fullWidth label="Assign Agent" value={newLead.agent} onChange={(e) => setNewLead((p) => ({ ...p, agent: e.target.value }))}>
+              <TextField select fullWidth label="Assign Agent" value={newLead.agent} disabled={!isSellerUser} onChange={(e) => setNewLead((p) => ({ ...p, agent: e.target.value }))}>
                 <MenuItem value="">{SELECT_AGENT_PLACEHOLDER}</MenuItem>
                 {getAgentsForTeam(newLead.team).map((agent) => (
                   <MenuItem key={agent} value={agent}>{agent}</MenuItem>
@@ -1835,8 +2205,7 @@ function LeadPipeline() {
                   size="small"
                   label="Source"
                   value={selectedLead?.source || ''}
-                  disabled={!isDetailEditMode}
-                  onChange={(e) => selectedLead && updateLeadField(selectedLead, 'source', e.target.value)}
+                  disabled={true}
                   fullWidth
                 />
               </Stack>
@@ -2087,57 +2456,29 @@ function LeadPipeline() {
                     }}
                   />
 
-                  {/* Filters Row */}
-                  <Grid container spacing={1.5}>
-                    <Grid item xs={6}>
-                      <Select
-                        fullWidth
-                        size="small"
-                        value={templateCategoryFilter}
-                        onChange={(e) => setTemplateCategoryFilter(e.target.value)}
-                        sx={{
-                          backgroundColor: '#090d16',
-                          color: '#ffffff',
-                          borderRadius: '8px',
-                          height: 36,
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148, 163, 184, 0.2)' },
-                        }}
-                      >
-                        <MenuItem value="All categories">All categories</MenuItem>
-                        <MenuItem value="UTILITY">UTILITY</MenuItem>
-                        <MenuItem value="MARKETING">MARKETING</MenuItem>
-                        <MenuItem value="AUTHENTICATION">AUTHENTICATION</MenuItem>
-                      </Select>
-                    </Grid>
-
-                    <Grid item xs={6}>
-                      <Select
-                        fullWidth
-                        size="small"
-                        value={templateLanguageFilter}
-                        onChange={(e) => setTemplateLanguageFilter(e.target.value)}
-                        sx={{
-                          backgroundColor: '#090d16',
-                          color: '#ffffff',
-                          borderRadius: '8px',
-                          height: 36,
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148, 163, 184, 0.2)' },
-                        }}
-                      >
-                        <MenuItem value="All languages">All languages</MenuItem>
-                        <MenuItem value="English">English</MenuItem>
-                        <MenuItem value="Hindi">Hindi</MenuItem>
-                        <MenuItem value="Marathi">Marathi</MenuItem>
-                        <MenuItem value="Gujarati">Gujarati</MenuItem>
-                        <MenuItem value="Spanish">Spanish</MenuItem>
-                        <MenuItem value="French">French</MenuItem>
-                      </Select>
-                    </Grid>
-                  </Grid>
+                  {/* Category Filter */}
+                  <Box sx={{ width: '100%' }}>
+                    <Select
+                      fullWidth
+                      size="small"
+                      value={templateCategoryFilter}
+                      onChange={(e) => setTemplateCategoryFilter(e.target.value)}
+                      sx={{
+                        backgroundColor: '#090d16',
+                        color: '#ffffff',
+                        borderRadius: '8px',
+                        height: 36,
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148, 163, 184, 0.2)' },
+                      }}
+                    >
+                      <MenuItem value="All categories">All categories</MenuItem>
+                      <MenuItem value="UTILITY">UTILITY</MenuItem>
+                      <MenuItem value="MARKETING">MARKETING</MenuItem>
+                      <MenuItem value="AUTHENTICATION">AUTHENTICATION</MenuItem>
+                    </Select>
+                  </Box>
 
                   {/* Scrollable Templates Cards List */}
                   <Box
@@ -2181,7 +2522,7 @@ function LeadPipeline() {
                             </Stack>
 
                             <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.74rem' }}>
-                              {tpl.category || 'Utility'} · {tpl.language || 'English'} · {tpl.status || 'Approved'} · {tpl.date || 'Jul 28, 2026'}
+                              {tpl.category || 'MARKETING'} · Type: {getTemplateHeaderType(tpl)} · {tpl.language || 'en_US'} · {tpl.status || 'APPROVED'} · {tpl.date || 'Jul 28, 2026'}
                             </Typography>
                           </Paper>
                         );
@@ -2346,10 +2687,90 @@ function LeadPipeline() {
                       border: '1px solid rgba(255, 255, 255, 0.08)',
                     }}
                   >
-                    {/* Header Title */}
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ffffff', mb: 1, fontSize: '0.95rem' }}>
-                      {activeTemplateObj.header_text || 'Order Confirmation'}
-                    </Typography>
+                    {/* Dynamic Media Header Rendering (IMAGE, VIDEO, DOCUMENT, TEXT) */}
+                    {(() => {
+                      const headerType = getTemplateHeaderType(activeTemplateObj);
+                      const mediaUrl = activeTemplateObj?.header_media || activeTemplateObj?.media_url || activeTemplateObj?.header_media_url || activeTemplateObj?.file || '';
+                      const resolvedUrl = resolveMediaUrl(mediaUrl);
+
+                      if (headerType === 'IMAGE') {
+                        return (
+                          <Box sx={{ width: '100%', mb: 1.2, borderRadius: '10px', overflow: 'hidden', bgcolor: '#020617' }}>
+                            <img
+                              src={resolvedUrl || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&fm=jpg&fit=crop&q=80'}
+                              alt="Template Header Preview"
+                              style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', display: 'block' }}
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&fm=jpg&fit=crop&q=80';
+                              }}
+                            />
+                          </Box>
+                        );
+                      }
+
+                      if (headerType === 'VIDEO') {
+                        return (
+                          <Box sx={{ width: '100%', mb: 1.2, borderRadius: '10px', overflow: 'hidden', bgcolor: '#020617' }}>
+                            <video
+                              controls
+                              src={resolvedUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'}
+                              style={{ width: '100%', maxHeight: '190px', objectFit: 'cover', display: 'block' }}
+                            />
+                          </Box>
+                        );
+                      }
+
+                      if (headerType === 'DOCUMENT') {
+                        return (
+                          <Paper
+                            elevation={0}
+                            sx={{
+                              p: 1.5,
+                              mb: 1.2,
+                              borderRadius: '10px',
+                              bgcolor: 'rgba(2, 6, 23, 0.6)',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '8px',
+                                bgcolor: 'rgba(239, 68, 68, 0.2)',
+                                color: '#ef4444',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <PictureAsPdfIcon sx={{ fontSize: 22 }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#ffffff', fontSize: '0.85rem', noWrap: true }}>
+                                {activeTemplateObj?.filename || activeTemplateObj?.document_name || 'Document.pdf'}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.72rem' }}>
+                                PDF Document · Tap to Preview
+                              </Typography>
+                            </Box>
+                          </Paper>
+                        );
+                      }
+
+                      if (activeTemplateObj?.header_text) {
+                        return (
+                          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ffffff', mb: 1, fontSize: '0.95rem' }}>
+                            {activeTemplateObj.header_text}
+                          </Typography>
+                        );
+                      }
+
+                      return null;
+                    })()}
 
                     {/* Rendered Dynamic Body Text */}
                     <Typography variant="body2" sx={{ fontSize: '0.86rem', color: '#f1f5f9', whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>

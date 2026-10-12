@@ -17,6 +17,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
 import { createPurchase } from '../../../api/purchases';
 import { fetchProducts } from '../../../api/products';
 import { fetchSuppliers } from '../../../api/suppliers';  
@@ -24,6 +25,7 @@ import Swal from 'sweetalert2';
 
 function NewPurchase() {
   const { user } = useAuth();
+  const { isDark } = useThemeContext();
   const invoiceDateRef = useRef(null);
   // Form state
   const [formData, setFormData] = useState({
@@ -1156,9 +1158,10 @@ function NewPurchase() {
                       disabled={loading}
                       sx={{
                         textTransform: 'none',
-                        color: '#e5e7eb',
-                        borderColor: 'rgba(255,255,255,0.2)',
-                        '&:hover': { borderColor: '#0ea5e9', color: '#0ea5e9' },
+                        borderRadius: '24px',
+                        color: isDark ? '#e5e7eb' : '#0f172a',
+                        borderColor: isDark ? 'rgba(148,163,184,0.6)' : '#cbd5e1',
+                        '&:hover': { borderColor: '#ef4444', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.08)' },
                       }}
                     >
                       Clear

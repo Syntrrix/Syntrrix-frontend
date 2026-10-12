@@ -309,26 +309,26 @@ Thank you for your business!`;
       >
         {/* Header */}
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h4" fontWeight={700} sx={{ color: '#1e293b', mb: 1 }}>
+          <Typography variant="h4" fontWeight={700} sx={{ color: '#0f172a', mb: 1 }}>
             {sellerName}
           </Typography>
           {sellerAddress && (
-            <Typography variant="body2" sx={{ color: '#64748b' }}>
+            <Typography variant="body2" sx={{ color: '#475569' }}>
               {sellerAddress}
             </Typography>
           )}
           {sellerContactLine && (
-            <Typography variant="body2" sx={{ color: '#64748b' }}>
+            <Typography variant="body2" sx={{ color: '#475569' }}>
               {sellerContactLine}
             </Typography>
           )}
         </Box>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 3, borderColor: '#cbd5e1' }} />
 
         {/* Invoice Title */}
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h5" fontWeight={600} sx={{ color: '#1e293b' }}>
+          <Typography variant="h5" fontWeight={700} sx={{ color: '#0f172a', letterSpacing: 1 }}>
             TAX INVOICE
           </Typography>
         </Box>
@@ -336,11 +336,11 @@ Thank you for your business!`;
         {/* Invoice Details */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Box>
-            <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
-              <strong>Invoice No:</strong> {invoice.invoice}
+            <Typography variant="body2" sx={{ color: '#0f172a', mb: 0.5 }}>
+              <strong style={{ color: '#0f172a' }}>Invoice No:</strong> {invoice.invoice}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
-              <strong>Date:</strong> {new Date(invoice.date).toLocaleDateString('en-GB', {
+            <Typography variant="body2" sx={{ color: '#0f172a', mb: 0.5 }}>
+              <strong style={{ color: '#0f172a' }}>Date:</strong> {new Date(invoice.date).toLocaleDateString('en-GB', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
@@ -348,34 +348,34 @@ Thank you for your business!`;
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
-              <strong>Customer:</strong> {invoice.customer}
+            <Typography variant="body2" sx={{ color: '#0f172a', mb: 0.5 }}>
+              <strong style={{ color: '#0f172a' }}>Customer:</strong> {invoice.customer}
             </Typography>
             {invoice.whatsapp_number && (
-              <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
-                <strong>WhatsApp:</strong> {invoice.whatsapp_number}
+              <Typography variant="body2" sx={{ color: '#0f172a', mb: 0.5 }}>
+                <strong style={{ color: '#0f172a' }}>WhatsApp:</strong> {invoice.whatsapp_number}
               </Typography>
             )}
             {(invoice.mobile_number || invoice.customerMobile || invoice.customer?.mobile_number) && (
-              <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
-                <strong>Mobile:</strong> {invoice.mobile_number || invoice.customerMobile || invoice.customer?.mobile_number}
+              <Typography variant="body2" sx={{ color: '#0f172a', mb: 0.5 }}>
+                <strong style={{ color: '#0f172a' }}>Mobile:</strong> {invoice.mobile_number || invoice.customerMobile || invoice.customer?.mobile_number}
               </Typography>
             )}
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, borderColor: '#cbd5e1' }} />
 
         {/* Items Table */}
         <TableContainer>
-          <Table sx={{ border: '1px solid #e2e8f0' }}>
+          <Table sx={{ border: '1px solid #cbd5e1' }}>
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#f1f5f9' }}>
+              <TableRow sx={{ backgroundColor: '#0f172a' }}>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     textAlign: 'center',
                     py: 1.5,
                   }}
@@ -384,9 +384,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     py: 1.5,
                   }}
                 >
@@ -394,9 +394,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     py: 1.5,
                   }}
                 >
@@ -404,9 +404,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     textAlign: 'center',
                     py: 1.5,
                   }}
@@ -415,9 +415,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     textAlign: 'right',
                     py: 1.5,
                   }}
@@ -426,9 +426,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     textAlign: 'right',
                     py: 1.5,
                   }}
@@ -437,9 +437,9 @@ Thank you for your business!`;
                 </TableCell>
                 <TableCell
                   sx={{
-                    border: '1px solid #e2e8f0',
-                    fontWeight: 600,
-                    color: '#1e293b',
+                    border: '1px solid #334155',
+                    fontWeight: 700,
+                    color: '#ffffff',
                     textAlign: 'right',
                     py: 1.5,
                   }}
@@ -455,10 +455,12 @@ Thank you for your business!`;
                 const gst = parseFloat(item.gst) || 0;
                 const amount = rate * qty;
                 return (
-                  <TableRow key={index}>
+                  <TableRow key={index} sx={{ '&:nth-of-type(even)': { backgroundColor: '#f8fafc' } }}>
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 600,
                         textAlign: 'center',
                         py: 1.5,
                       }}
@@ -468,6 +470,8 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 600,
                         py: 1.5,
                       }}
                     >
@@ -476,6 +480,8 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 500,
                         py: 1.5,
                       }}
                     >
@@ -484,6 +490,8 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 600,
                         textAlign: 'center',
                         py: 1.5,
                       }}
@@ -493,6 +501,8 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 500,
                         textAlign: 'right',
                         py: 1.5,
                       }}
@@ -502,6 +512,8 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 500,
                         textAlign: 'right',
                         py: 1.5,
                       }}
@@ -511,9 +523,10 @@ Thank you for your business!`;
                     <TableCell
                       sx={{
                         border: '1px solid #e2e8f0',
+                        color: '#0f172a',
+                        fontWeight: 700,
                         textAlign: 'right',
                         py: 1.5,
-                        fontWeight: 500,
                       }}
                     >
                       ₹{amount.toFixed(2)}
@@ -529,32 +542,32 @@ Thank you for your business!`;
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
           <Box sx={{ minWidth: 250 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>
                 Total:
               </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>
                 ₹{grandTotal.toFixed(2)}
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        <Divider sx={{ my: 4 }} />
+        <Divider sx={{ my: 4, borderColor: '#cbd5e1' }} />
 
         {/* Signature Section */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Box sx={{ textAlign: 'center', flex: 1 }}>
-            <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 4 }}>
               Customer Signature
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'center', flex: 1 }}>
             {sellerFullName && (
-              <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+              <Typography variant="body2" sx={{ color: '#0f172a', fontWeight: 600, mb: 1 }}>
                 {sellerFullName}
               </Typography>
             )}
-            <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+            <Typography variant="body2" sx={{ color: '#475569', mb: 4 }}>
               Authorized Signature
             </Typography>
           </Box>
@@ -562,7 +575,7 @@ Thank you for your business!`;
 
         {/* Footer */}
         <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+          <Typography variant="caption" sx={{ color: '#64748b' }}>
             Thank you for your business!
           </Typography>
         </Box>

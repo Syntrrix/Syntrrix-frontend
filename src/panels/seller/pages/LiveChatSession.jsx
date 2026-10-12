@@ -7,10 +7,18 @@ import {
   TextField,
   Typography,
   Paper,
+  IconButton,
   Alert,
+  Chip,
+  InputAdornment,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import { useParams } from 'react-router-dom';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import ImageIcon from '@mui/icons-material/Image';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useThemeContext } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
 
 import {
   fetchSellerLiveChatSession,
@@ -20,17 +28,37 @@ import {
 import LiveChatAttachment from '../../../components/LiveChatAttachment';
 
 function LiveChatSession() {
+  const { isDark } = useThemeContext();
+  const { user } = useAuth();
   const { customerId } = useParams();
+  const navigate = useNavigate();
+
+  const handleBackToLeadPipeline = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      const roleId = user?.role?.id;
+      if (roleId === 4) {
+        navigate('/team-manager/lead-pipeline');
+      } else if (roleId === 5) {
+        navigate('/agent/lead-pipeline');
+      } else {
+        navigate('/seller/lead-pipeline');
+      }
+    }
+  };
 
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [input, setInput] = useState('');
-
   const [pollingEnabled, setPollingEnabled] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
+  const [sending, setSending] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -98,21 +126,37 @@ function LiveChatSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachedFile(file);
+    }
+  };
+
   const canSend = useMemo(() => {
-    if (!session?.session_id) return false;
-    return input.trim().length > 0;
-  }, [session?.session_id, input]);
+    if (!session?.session_id || sending) return false;
+    return input.trim().length > 0 || Boolean(attachedFile);
+  }, [session?.session_id, input, attachedFile, sending]);
 
   const handleSend = async () => {
     if (!canSend) return;
     setError('');
+    setSending(true);
     const text = input.trim();
+    const fileToSend = attachedFile;
     setInput('');
+    setAttachedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
     try {
-      await sendSellerLiveChatMessage(session.session_id, text);
+      await sendSellerLiveChatMessage(session.session_id, text, fileToSend);
       await loadMessages();
     } catch (e) {
       setError(e.message || 'Failed to send message.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -120,16 +164,17 @@ function LiveChatSession() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: '100vh',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#0f172a',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
           overflow: 'hidden',
         }}
       >
@@ -138,14 +183,30 @@ function LiveChatSession() {
             backgroundColor: '#1e293b',
             padding: 2,
             borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
           }}
         >
-          <Typography variant="h6" sx={{ color: '#e5e7eb', fontWeight: 700 }}>
-            Live Chat
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#9ca3af' }}>
-            Customer ID: {customerId}
-          </Typography>
+          <IconButton
+            onClick={handleBackToLeadPipeline}
+            sx={{
+              color: '#e5e7eb',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.18)' },
+            }}
+            title="Back to Lead Pipeline"
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Box>
+            <Typography variant="h6" sx={{ color: '#e5e7eb', fontWeight: 700, lineHeight: 1.2 }}>
+              Live Chat
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#9ca3af', mt: 0.2 }}>
+              Customer ID: {customerId}
+            </Typography>
+          </Box>
         </Box>
 
         {error && (
@@ -211,13 +272,57 @@ function LiveChatSession() {
           </Paper>
 
           <Box sx={{ p: 2, backgroundColor: '#0f172a' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            {attachedFile ? (
+              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Chip
+                  icon={attachedFile.type?.startsWith('image/') ? <ImageIcon fontSize="small" /> : <AttachFileIcon fontSize="small" />}
+                  label={`${attachedFile.name} (${(attachedFile.size / 1024).toFixed(1)} KB)`}
+                  onDelete={() => {
+                    setAttachedFile(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    borderColor: '#0ea5e9',
+                    color: '#38bdf8',
+                    fontWeight: 600,
+                  }}
+                />
+              </Box>
+            ) : null}
+
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/*,.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+                onChange={handleFileChange}
+              />
               <TextField
                 fullWidth
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
                 size="small"
+                disabled={sending}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        disabled={sending}
+                        onClick={() => fileInputRef.current?.click()}
+                        sx={{ color: attachedFile ? '#0ea5e9' : '#9ca3af' }}
+                        title="Upload Image or PDF Document"
+                      >
+                        <AttachFileIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -243,7 +348,7 @@ function LiveChatSession() {
                   height: 40,
                 }}
               >
-                <SendIcon />
+                {sending ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : <SendIcon />}
               </Button>
             </Box>
           </Box>

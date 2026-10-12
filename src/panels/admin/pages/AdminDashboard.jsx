@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import { fetchSellers } from '../../../api/sellers';
 import { fetchBuyers } from '../../../api/buyers';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 // KPI Card Component
 const KPICard = ({ title, value, icon, color }) => {
@@ -62,6 +63,7 @@ const KPICard = ({ title, value, icon, color }) => {
 
 
 function AdminDashboard() {
+  const { isDark } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeSellers, setActiveSellers] = useState(0);
@@ -128,10 +130,10 @@ function AdminDashboard() {
   ];
 
   return (
-    <Box sx={{ width: '100%', height: '100%', p: { xs: 1.5, md: 3 }, backgroundColor: '#020617', minHeight: '100vh', color: '#e5e7eb' }}>
+    <Box sx={{ width: '100%', height: '100%', p: { xs: 1.5, md: 3 }, backgroundColor: isDark ? '#020617' : '#f1f5f9', minHeight: '100vh', color: isDark ? '#e5e7eb' : '#0f172a', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {/* Header Section */}
       <Box mb={3}>
-        <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: '#e5e7eb' }}>
+        <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
           Dashboard
         </Typography>
        

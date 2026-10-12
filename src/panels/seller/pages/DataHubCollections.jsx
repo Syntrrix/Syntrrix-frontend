@@ -31,6 +31,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Swal from 'sweetalert2';
 import html2canvas from 'html2canvas';
+import { useThemeContext } from '../../../context/ThemeContext';
 import { useAuth } from '../../../context/AuthContext';
 import TaxInvoiceCaptureMarkup from '../../../components/TaxInvoiceCaptureMarkup';
 import {
@@ -132,11 +133,11 @@ function getRowValueForColumn(row, columnName) {
 
 function DataHubCollections() {
   const { user } = useAuth();
+  const { isDark: isDarkTheme } = useThemeContext();
   const isSellerUser = user?.role?.id === 3;
   const isTeamManagerUser = user?.role?.id === 4;
   const isAgentUser = user?.role?.id === 5;
   const canAssignRows = isSellerUser || isTeamManagerUser || isAgentUser;
-  const isDarkTheme = isSellerUser || isTeamManagerUser || isAgentUser;
   const invoiceCaptureRef = useRef(null);
   const [invoiceGenPayload, setInvoiceGenPayload] = useState(null);
 
@@ -760,20 +761,21 @@ function DataHubCollections() {
   };
 
   return (
-    <Box sx={{ height: 'calc(100vh - 64px)', backgroundColor: '#f8fafc', display: 'flex' }}>
+    <Box sx={{ height: 'calc(100vh - 64px)', backgroundColor: isDarkTheme ? '#0b1329' : '#f8fafc', display: 'flex' }}>
       {/* Left sidebar */}
       <Paper
         elevation={0}
         sx={{
           width: 320,
-          borderRight: '1px solid rgba(2,6,23,0.08)',
+          borderRight: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.15)' : '1px solid rgba(2, 6, 23, 0.08)',
           borderRadius: 0,
           display: 'flex',
           flexDirection: 'column',
+          backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography fontWeight={800} sx={{ color: '#0f172a', fontSize: 16 }}>
+          <Typography fontWeight={800} sx={{ color: isDarkTheme ? '#f8fafc' : '#0f172a', fontSize: 16 }}>
             Collections
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.25 }}>
@@ -783,18 +785,31 @@ function DataHubCollections() {
               placeholder="Search Collection"
               size="small"
               fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.2)' : 'rgba(2,6,23,0.1)' },
+                },
+              }}
               InputProps={{
                 startAdornment: <SearchIcon sx={{ color: '#94a3b8', mr: 1 }} />,
               }}
             />
             {isSellerUser && (
-              <IconButton onClick={() => setCreateOpen(true)} sx={{ border: '1px solid rgba(2,6,23,0.10)' }}>
+              <IconButton
+                onClick={() => setCreateOpen(true)}
+                sx={{
+                  border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : '1px solid rgba(2,6,23,0.10)',
+                  color: isDarkTheme ? '#38bdf8' : '#0ea5e9',
+                }}
+              >
                 <AddIcon />
               </IconButton>
             )}
           </Box>
         </Box>
-        <Divider />
+        <Divider sx={{ borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.15)' : 'rgba(2,6,23,0.08)' }} />
         <Box
           sx={{
             flex: 1,
@@ -816,13 +831,21 @@ function DataHubCollections() {
                   px: 2,
                   py: 1.25,
                   cursor: 'pointer',
-                  backgroundColor: active ? 'rgba(59,130,246,0.10)' : 'transparent',
-                  '&:hover': { backgroundColor: 'rgba(2,6,23,0.04)' },
-                  borderBottom: '1px solid rgba(2,6,23,0.05)',
+                  backgroundColor: active
+                    ? (isDarkTheme ? 'rgba(56, 189, 248, 0.18)' : 'rgba(59, 130, 246, 0.10)')
+                    : 'transparent',
+                  '&:hover': { backgroundColor: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(2, 6, 23, 0.04)' },
+                  borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.1)' : '1px solid rgba(2,6,23,0.05)',
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                  <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: 13 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      color: active ? (isDarkTheme ? '#38bdf8' : '#2563eb') : (isDarkTheme ? '#e2e8f0' : '#0f172a'),
+                      fontSize: 13,
+                    }}
+                  >
                     {t.table_name}
                   </Typography>
                   {isSellerUser && (
@@ -848,7 +871,7 @@ function DataHubCollections() {
       {/* Main */}
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography sx={{ fontWeight: 900, color: '#0f172a' }}>
+          <Typography sx={{ fontWeight: 900, color: isDarkTheme ? '#f8fafc' : '#0f172a', fontSize: 18 }}>
             {selectedTable?.table_name || 'Lead Table'}
           </Typography>
           <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
@@ -857,9 +880,16 @@ function DataHubCollections() {
               onChange={(e) => setRowQuery(e.target.value)}
               placeholder="Search by Row Values"
               size="small"
-              sx={{ width: 260 }}
+              sx={{
+                width: 240,
+                '& .MuiOutlinedInput-root': {
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.1)' },
+                },
+              }}
               InputProps={{
-                startAdornment: <SearchIcon sx={{ color: '#94a3b8', mr: 1 }} />,
+                startAdornment: <SearchIcon sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b', mr: 1 }} />,
               }}
             />
             <Select
@@ -867,7 +897,20 @@ function DataHubCollections() {
               value={searchColumn}
               onChange={(e) => setSearchColumn(e.target.value)}
               displayEmpty
-              sx={{ width: 220 }}
+              sx={{
+                width: 210,
+                color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.1)',
+                },
+                '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                },
+              }}
             >
               <MenuItem value="">Select a Column to search</MenuItem>
               {columns.map((c) => (
@@ -876,43 +919,116 @@ function DataHubCollections() {
                 </MenuItem>
               ))}
             </Select>
-            <Button variant="outlined" size="small" sx={{ textTransform: 'none' }} disabled>
+
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                textTransform: 'none',
+                color: isDarkTheme ? '#cbd5e1' : '#334155',
+                borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)',
+                '&.Mui-disabled': {
+                  color: isDarkTheme ? 'rgba(203, 213, 225, 0.4)' : 'rgba(51, 65, 85, 0.4)',
+                  borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.12)' : 'rgba(2,6,23,0.08)',
+                },
+              }}
+              disabled
+            >
               Upload File
             </Button>
-            <Button variant="outlined" size="small" sx={{ textTransform: 'none' }} disabled>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                textTransform: 'none',
+                color: isDarkTheme ? '#cbd5e1' : '#334155',
+                borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)',
+                '&.Mui-disabled': {
+                  color: isDarkTheme ? 'rgba(203, 213, 225, 0.4)' : 'rgba(51, 65, 85, 0.4)',
+                  borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.12)' : 'rgba(2,6,23,0.08)',
+                },
+              }}
+              disabled
+            >
               Upload Bulk File
             </Button>
-            <Button variant="outlined" size="small" sx={{ textTransform: 'none' }} disabled>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                textTransform: 'none',
+                color: isDarkTheme ? '#cbd5e1' : '#334155',
+                borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)',
+                '&.Mui-disabled': {
+                  color: isDarkTheme ? 'rgba(203, 213, 225, 0.4)' : 'rgba(51, 65, 85, 0.4)',
+                  borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.12)' : 'rgba(2,6,23,0.08)',
+                },
+              }}
+              disabled
+            >
               Download File
             </Button>
+
             {isSellerUser && (
-              <Button variant="outlined" size="small" sx={{ textTransform: 'none' }} onClick={openEdit} disabled={!selectedTable}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={openEdit}
+                disabled={!selectedTable}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  color: isDarkTheme ? '#38bdf8' : '#2563eb',
+                  borderColor: isDarkTheme ? '#38bdf8' : '#2563eb',
+                  '&:hover': { borderColor: isDarkTheme ? '#7dd3fc' : '#1d4ed8' },
+                  '&.Mui-disabled': {
+                    color: isDarkTheme ? 'rgba(56, 189, 248, 0.35)' : 'rgba(37, 99, 235, 0.35)',
+                    borderColor: isDarkTheme ? 'rgba(56, 189, 248, 0.2)' : 'rgba(37, 99, 235, 0.2)',
+                  },
+                }}
+              >
                 Edit Collection
               </Button>
             )}
+
             <Button
               variant="contained"
               size="small"
               startIcon={<AddIcon />}
-              sx={{ textTransform: 'none', backgroundColor: '#2f855a', '&:hover': { backgroundColor: '#276749' } }}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 700,
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                '&:hover': { backgroundColor: '#059669' },
+              }}
               onClick={openAddRow}
             >
               Add Row
             </Button>
+
             {canAssignRows && (
               <IconButton
                 onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
                 disabled={selectedRows.length === 0}
                 sx={{
-                  border: '1px solid rgba(2,6,23,0.10)',
-                  color: selectedRows.length > 0 ? '#0f172a' : '#9ca3af',
+                  border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid rgba(2,6,23,0.10)',
+                  color: selectedRows.length > 0 ? (isDarkTheme ? '#38bdf8' : '#0f172a') : (isDarkTheme ? '#64748b' : '#9ca3af'),
                 }}
                 title="Bulk actions"
               >
                 <MoreVertIcon />
               </IconButton>
             )}
-            <Menu anchorEl={bulkMenuAnchor} open={Boolean(bulkMenuAnchor)} onClose={() => setBulkMenuAnchor(null)}>
+
+            <Menu
+              anchorEl={bulkMenuAnchor}
+              open={Boolean(bulkMenuAnchor)}
+              onClose={() => setBulkMenuAnchor(null)}
+              PaperProps={{
+                sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+              }}
+            >
               {isSellerUser && (
                 <MenuItem
                   onClick={async () => {
@@ -942,12 +1058,20 @@ function DataHubCollections() {
         ) : null}
 
         <Box sx={{ flex: 1, minHeight: 0, p: 2, pt: 0 }}>
-          <Paper elevation={0} sx={{ border: '1px solid rgba(2,6,23,0.10)', borderRadius: 2, overflow: 'hidden' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.15)' : '1px solid rgba(2,6,23,0.10)',
+              borderRadius: 2,
+              overflow: 'hidden',
+              backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            }}
+          >
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
                   {canAssignRows && (
-                    <TableCell sx={{ fontWeight: 800, backgroundColor: '#1d4ed8', color: '#fff', width: 56 }}>
+                    <TableCell sx={{ fontWeight: 800, backgroundColor: isDarkTheme ? '#1e3a8a' : '#1d4ed8', color: '#fff', width: 56 }}>
                       <Checkbox
                         size="small"
                         checked={allVisibleSelected}
@@ -958,22 +1082,22 @@ function DataHubCollections() {
                     </TableCell>
                   )}
                   {columns.map((c) => (
-                    <TableCell key={c.name} sx={{ fontWeight: 800, backgroundColor: '#1d4ed8', color: '#fff' }}>
+                    <TableCell key={c.name} sx={{ fontWeight: 800, backgroundColor: isDarkTheme ? '#1e3a8a' : '#1d4ed8', color: '#fff' }}>
                       {c.name}
                     </TableCell>
                   ))}
                   {showCatalogueStatusColumn ? (
-                    <TableCell sx={{ fontWeight: 800, backgroundColor: '#1d4ed8', color: '#fff', minWidth: 100 }}>
+                    <TableCell sx={{ fontWeight: 800, backgroundColor: isDarkTheme ? '#1e3a8a' : '#1d4ed8', color: '#fff', minWidth: 100 }}>
                       Status
                     </TableCell>
                   ) : null}
                   {showCatalogueOrderNoColumn ? (
-                    <TableCell sx={{ fontWeight: 800, backgroundColor: '#1d4ed8', color: '#fff', minWidth: 140 }}>
+                    <TableCell sx={{ fontWeight: 800, backgroundColor: isDarkTheme ? '#1e3a8a' : '#1d4ed8', color: '#fff', minWidth: 140 }}>
                       Order no.
                     </TableCell>
                   ) : null}
                   {hasCatalogueOrders ? (
-                    <TableCell sx={{ fontWeight: 800, backgroundColor: '#1d4ed8', color: '#fff', width: 160 }}>
+                    <TableCell sx={{ fontWeight: 800, backgroundColor: isDarkTheme ? '#1e3a8a' : '#1d4ed8', color: '#fff', width: 160 }}>
                       Action
                     </TableCell>
                   ) : null}
@@ -984,20 +1108,21 @@ function DataHubCollections() {
                   <TableRow>
                     <TableCell
                       colSpan={Math.max(columns.length + 1 + catalogueExtraColCount, 2)}
-                      sx={{ py: 4, color: '#64748b' }}
+                      sx={{ py: 4, color: isDarkTheme ? '#94a3b8' : '#64748b', textAlign: 'center', backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff' }}
                     >
                       No data
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedRows.map((r) => (
-                    <TableRow key={r.row_id}>
+                    <TableRow key={r.row_id} sx={{ '&:hover': { backgroundColor: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'rgba(2,6,23,0.02)' } }}>
                       {canAssignRows && (
-                        <TableCell>
+                        <TableCell sx={{ borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.12)' : '1px solid #e2e8f0' }}>
                           <Checkbox
                             size="small"
                             checked={selectedRowIds.includes(String(r?.row_id || ''))}
                             onChange={() => toggleRowSelection(r?.row_id)}
+                            sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b', '&.Mui-checked': { color: '#3b82f6' } }}
                           />
                         </TableCell>
                       )}
@@ -1005,7 +1130,13 @@ function DataHubCollections() {
                         const raw = getRowValueForColumn(r, c.name);
                         const isStatusCol = String(c.name || '').trim().toLowerCase().replace(/\s+/g, ' ') === 'status';
                         return (
-                          <TableCell key={c.name}>
+                          <TableCell
+                            key={c.name}
+                            sx={{
+                              color: isDarkTheme ? '#f1f5f9' : '#0f172a',
+                              borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.12)' : '1px solid #e2e8f0',
+                            }}
+                          >
                             {isStatusCol ? (
                               (() => {
                                 const { label, color } = catalogueStatusDisplay(raw);
@@ -1022,7 +1153,7 @@ function DataHubCollections() {
                         );
                       })}
                       {showCatalogueStatusColumn ? (
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        <TableCell sx={{ whiteSpace: 'nowrap', borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.12)' : '1px solid #e2e8f0' }}>
                           {(() => {
                             const { label, color } = catalogueStatusDisplay(r?.status);
                             return (
@@ -1034,15 +1165,15 @@ function DataHubCollections() {
                         </TableCell>
                       ) : null}
                       {showCatalogueOrderNoColumn ? (
-                        <TableCell sx={{ fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                        <TableCell sx={{ fontWeight: 700, color: isDarkTheme ? '#f1f5f9' : '#0f172a', whiteSpace: 'nowrap', borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.12)' : '1px solid #e2e8f0' }}>
                           {String(r?.order_no ?? '')}
                         </TableCell>
                       ) : null}
                       {hasCatalogueOrders ? (
-                        <TableCell>
+                        <TableCell sx={{ borderBottom: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.12)' : '1px solid #e2e8f0' }}>
                           {Array.isArray(r?.cart_items) && r.cart_items.length > 0 ? (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <IconButton size="small" onClick={() => openOrderRow(r)} sx={{ color: '#2563eb' }} title="View order">
+                              <IconButton size="small" onClick={() => openOrderRow(r)} sx={{ color: '#3b82f6' }} title="View order">
                                 <VisibilityIcon fontSize="small" />
                               </IconButton>
                               {isSellerUser && !isFinalCatalogueHubStatus(r?.status) ? (
@@ -1067,7 +1198,7 @@ function DataHubCollections() {
                               ) : null}
                             </Box>
                           ) : (
-                            <Typography sx={{ color: '#94a3b8', fontSize: 12 }}>—</Typography>
+                            <Typography sx={{ color: isDarkTheme ? '#64748b' : '#94a3b8', fontSize: 12 }}>—</Typography>
                           )}
                         </TableCell>
                       ) : null}
@@ -1088,8 +1219,10 @@ function DataHubCollections() {
                 setPage(0);
               }}
               sx={{
-                borderTop: isDarkTheme ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e5e7eb',
-                color: isDarkTheme ? '#e5e7eb' : 'inherit',
+                borderTop: isDarkTheme ? '1px solid rgba(148,163,184,0.15)' : '1px solid #e5e7eb',
+                color: isDarkTheme ? '#e5e7eb' : '#0f172a',
+                '.MuiSvgIcon-root': { color: isDarkTheme ? '#e5e7eb' : '#0f172a' },
+                '.MuiTablePagination-select': { color: isDarkTheme ? '#e5e7eb' : '#0f172a' },
               }}
             />
           </Paper>
@@ -1097,7 +1230,19 @@ function DataHubCollections() {
       </Box>
 
       {/* Order View Modal */}
-      <Dialog open={orderOpen} onClose={() => setOrderOpen(false)} fullWidth maxWidth="md">
+      <Dialog
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+            border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : 'none',
+          },
+        }}
+      >
         <DialogTitle
           sx={{
             display: 'flex',
@@ -1108,7 +1253,7 @@ function DataHubCollections() {
             flexWrap: 'wrap',
           }}
         >
-          <Typography sx={{ fontWeight: 900 }}>Cart Summary</Typography>
+          <Typography sx={{ fontWeight: 900, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Cart Summary</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
             <Button
               variant="outlined"
@@ -1116,28 +1261,34 @@ function DataHubCollections() {
               disabled={!orderRow || !canDownloadSellerOrderInvoice(orderRow)}
               onClick={() => requestOrderInvoiceDownload()}
               title={!orderRow || !canDownloadSellerOrderInvoice(orderRow) ? 'Available after order is approved' : 'Download online invoice (PNG)'}
-              sx={{ textTransform: 'none', fontWeight: 700 }}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 700,
+                color: isDarkTheme ? '#38bdf8' : '#2563eb',
+                borderColor: isDarkTheme ? '#38bdf8' : '#2563eb',
+                '&.Mui-disabled': { color: isDarkTheme ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.4)' },
+              }}
             >
               View invoice
             </Button>
-            <IconButton onClick={() => setOrderOpen(false)} aria-label="Close">
+            <IconButton onClick={() => setOrderOpen(false)} aria-label="Close" sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography sx={{ color: '#0f172a', fontWeight: 800, fontSize: 13 }}>
+            <Typography sx={{ color: isDarkTheme ? '#f1f5f9' : '#0f172a', fontWeight: 800, fontSize: 13 }}>
               Customer: {String(orderRow?.customer_name || orderRow?.name || '')}
             </Typography>
-            <Typography sx={{ color: '#334155', fontSize: 13 }}>
+            <Typography sx={{ color: isDarkTheme ? '#cbd5e1' : '#334155', fontSize: 13 }}>
               Phone: {String(orderRow?.customer_phone || orderRow?.phone || '')}
             </Typography>
-            <Typography sx={{ color: '#334155', fontSize: 13 }}>
+            <Typography sx={{ color: isDarkTheme ? '#cbd5e1' : '#334155', fontSize: 13 }}>
               Email: {String(orderRow?.customer_email || orderRow?.email || '')}
             </Typography>
             {String(orderRow?.order_no || '').trim() ? (
-              <Typography sx={{ color: '#0f172a', fontSize: 13, fontWeight: 800, mt: 0.5 }}>
+              <Typography sx={{ color: isDarkTheme ? '#f1f5f9' : '#0f172a', fontSize: 13, fontWeight: 800, mt: 0.5 }}>
                 Order no.: {String(orderRow.order_no)}
               </Typography>
             ) : null}
@@ -1150,31 +1301,39 @@ function DataHubCollections() {
                 </Typography>
               );
             })()}
-            <Divider sx={{ my: 1 }} />
+            <Divider sx={{ my: 1, borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.15)' : 'rgba(2, 6, 23, 0.08)' }} />
             {Array.isArray(orderRow?.cart_items) && orderRow.cart_items.length > 0 ? (
               orderRow.cart_items.map((it, idx) => (
                 <Box
                   key={`${it.product_id || idx}`}
-                  sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, p: 1, border: '1px solid rgba(2,6,23,0.08)', borderRadius: 1.5 }}
+                  sx={{
+                    display: 'flex',
+                    justify: 'space-between',
+                    gap: 2,
+                    p: 1,
+                    border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.15)' : '1px solid rgba(2,6,23,0.08)',
+                    borderRadius: 1.5,
+                    backgroundColor: isDarkTheme ? '#1e293b' : 'transparent',
+                  }}
                 >
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>{String(it.product_name || '')}</Typography>
-                    <Typography sx={{ color: '#64748b', fontSize: 12 }}>
+                    <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>{String(it.product_name || '')}</Typography>
+                    <Typography sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b', fontSize: 12 }}>
                       Qty: {Number(it.qty) || 0} | Price: ₹{Number(it.price) || 0}
                     </Typography>
                   </Box>
-                  <Typography sx={{ fontWeight: 900, color: '#0f172a' }}>
+                  <Typography sx={{ fontWeight: 900, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>
                     ₹{((Number(it.price) || 0) * (Number(it.qty) || 0)).toFixed(2)}
                   </Typography>
                 </Box>
               ))
             ) : (
-              <Typography sx={{ color: '#64748b' }}>No cart items found.</Typography>
+              <Typography sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>No cart items found.</Typography>
             )}
-            <Divider sx={{ my: 1 }} />
+            <Divider sx={{ my: 1, borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.15)' : 'rgba(2, 6, 23, 0.08)' }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography sx={{ fontWeight: 900, color: '#0f172a' }}>Total</Typography>
-              <Typography sx={{ fontWeight: 900, color: '#0f172a' }}>
+              <Typography sx={{ fontWeight: 900, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Total</Typography>
+              <Typography sx={{ fontWeight: 900, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>
                 ₹{Number(orderRow?.total_amount || 0).toFixed(2)}
               </Typography>
             </Box>
@@ -1183,17 +1342,29 @@ function DataHubCollections() {
       </Dialog>
 
       {/* Assign Modal */}
-      <Dialog open={assignModalOpen} onClose={() => setAssignModalOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+            border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : 'none',
+          },
+        }}
+      >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontWeight: 800 }}>Assign Customers</Typography>
-          <IconButton onClick={() => setAssignModalOpen(false)}>
+          <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Assign Customers</Typography>
+          <IconButton onClick={() => setAssignModalOpen(false)} sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: '#475569' }}>Select Team (Manager)</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: isDarkTheme ? '#cbd5e1' : '#475569' }}>Select Team (Manager)</Typography>
               <Select
                 fullWidth
                 size="small"
@@ -1203,6 +1374,17 @@ function DataHubCollections() {
                   setSelectedAgentId('');
                 }}
                 displayEmpty
+                sx={{
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                  '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                  },
+                }}
               >
                 <MenuItem value="">Please select team</MenuItem>
                 {teamPickerRows.map((t) => (
@@ -1214,7 +1396,7 @@ function DataHubCollections() {
             </Box>
 
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: '#475569' }}>Select Agent</Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: isDarkTheme ? '#cbd5e1' : '#475569' }}>Select Agent</Typography>
               <Select
                 fullWidth
                 size="small"
@@ -1222,6 +1404,17 @@ function DataHubCollections() {
                 onChange={(e) => setSelectedAgentId(e.target.value)}
                 disabled={!selectedTeamManagerId}
                 displayEmpty
+                sx={{
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                  '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                  },
+                }}
               >
                 <MenuItem value="">Please select agent</MenuItem>
                 {(() => {
@@ -1238,7 +1431,7 @@ function DataHubCollections() {
             </Box>
 
             <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-              <Button onClick={() => setAssignModalOpen(false)} sx={{ textTransform: 'none', color: '#64748b' }}>
+              <Button onClick={() => setAssignModalOpen(false)} sx={{ textTransform: 'none', color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
                 Cancel
               </Button>
               <Button
@@ -1255,34 +1448,53 @@ function DataHubCollections() {
       </Dialog>
 
       {/* Create Table Modal */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} fullWidth maxWidth="lg">
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        fullWidth
+        maxWidth="lg"
+        PaperProps={{
+          sx: {
+            backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+            border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : 'none',
+          },
+        }}
+      >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontWeight: 800 }}>Create Table</Typography>
-          <IconButton onClick={() => setCreateOpen(false)}>
+          <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Create Table</Typography>
+          <IconButton onClick={() => setCreateOpen(false)} sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontSize: 12, color: '#64748b', mb: 0.5 }}>Table Name</Typography>
+            <Typography sx={{ fontSize: 12, color: isDarkTheme ? '#94a3b8' : '#64748b', mb: 0.5 }}>Table Name</Typography>
             <TextField
               value={newTableName}
               onChange={(e) => setNewTableName(e.target.value)}
               placeholder="Enter Table Name"
               fullWidth
               size="small"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                },
+              }}
             />
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 0.8fr 0.8fr 1fr 64px', gap: 1.25, alignItems: 'center', px: 0.5 }}>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Field Name</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Type</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Searchable</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Masked</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Fields</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Field Name</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Type</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Searchable</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Masked</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Fields</Typography>
             <Box />
           </Box>
-          <Divider sx={{ my: 1.5 }} />
+          <Divider sx={{ my: 1.5, borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.15)' : 'rgba(2,6,23,0.08)' }} />
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {newColumns.map((c, idx) => (
@@ -1301,8 +1513,30 @@ function DataHubCollections() {
                   placeholder="Enter Column Name"
                   size="small"
                   error={!c.name}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                      backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                      '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    },
+                  }}
                 />
-                <Select size="small" value={c.type} onChange={(e) => updateColumn(idx, { type: e.target.value })}>
+                <Select
+                  size="small"
+                  value={c.type}
+                  onChange={(e) => updateColumn(idx, { type: e.target.value })}
+                  sx={{
+                    color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                    backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                    '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                    },
+                  }}
+                >
                   {COLUMN_TYPES.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}
@@ -1323,6 +1557,17 @@ function DataHubCollections() {
                   size="small"
                   value={c.field_type}
                   onChange={(e) => updateColumn(idx, { field_type: e.target.value })}
+                  sx={{
+                    color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                    backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                    '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                    },
+                  }}
                 >
                   {FIELD_TYPES.map((t) => (
                     <MenuItem key={t} value={t}>
@@ -1331,7 +1576,7 @@ function DataHubCollections() {
                   ))}
                 </Select>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <IconButton onClick={() => removeColumn(idx)} disabled={newColumns.length === 1}>
+                  <IconButton onClick={() => removeColumn(idx)} disabled={newColumns.length === 1} sx={{ color: '#ef4444' }}>
                     <DeleteOutlineIcon />
                   </IconButton>
                 </Box>
@@ -1340,14 +1585,14 @@ function DataHubCollections() {
           </Box>
 
           <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Button onClick={addColumn} sx={{ textTransform: 'none' }}>
+            <Button onClick={addColumn} sx={{ textTransform: 'none', color: isDarkTheme ? '#38bdf8' : '#2563eb' }}>
               + Add another field
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant="outlined" onClick={() => setCreateOpen(false)} sx={{ textTransform: 'none' }}>
+              <Button variant="outlined" onClick={() => setCreateOpen(false)} sx={{ textTransform: 'none', color: isDarkTheme ? '#cbd5e1' : 'inherit', borderColor: isDarkTheme ? 'rgba(148,163,184,0.3)' : 'inherit' }}>
                 Cancel
               </Button>
-              <Button variant="contained" onClick={handleCreate} disabled={saving} sx={{ textTransform: 'none' }}>
+              <Button variant="contained" onClick={handleCreate} disabled={saving} sx={{ textTransform: 'none', backgroundColor: '#3b82f6' }}>
                 Save
               </Button>
             </Box>
@@ -1356,33 +1601,52 @@ function DataHubCollections() {
       </Dialog>
 
       {/* Edit Collection Modal */}
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="lg">
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        fullWidth
+        maxWidth="lg"
+        PaperProps={{
+          sx: {
+            backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+            border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : 'none',
+          },
+        }}
+      >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontWeight: 800 }}>Edit Collection</Typography>
-          <IconButton onClick={() => setEditOpen(false)}>
+          <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Edit Collection</Typography>
+          <IconButton onClick={() => setEditOpen(false)} sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontSize: 12, color: '#64748b', mb: 0.5 }}>Table Name</Typography>
+            <Typography sx={{ fontSize: 12, color: isDarkTheme ? '#94a3b8' : '#64748b', mb: 0.5 }}>Table Name</Typography>
             <TextField
               value={newTableName}
               onChange={(e) => setNewTableName(e.target.value)}
               placeholder="Enter Table Name"
               fullWidth
               size="small"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                },
+              }}
             />
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 0.8fr 0.8fr 1fr 64px', gap: 1.25, alignItems: 'center', px: 0.5 }}>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Field Name</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Type</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Searchable</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Masked</Typography>
-            <Typography sx={{ fontWeight: 800, color: '#0f172a' }}>Fields</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Field Name</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Type</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Searchable</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Masked</Typography>
+            <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Fields</Typography>
             <Box />
           </Box>
-          <Divider sx={{ my: 1.5 }} />
+          <Divider sx={{ my: 1.5, borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.15)' : 'rgba(2,6,23,0.08)' }} />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {newColumns.map((c, idx) => (
               <Box key={idx} sx={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 0.8fr 0.8fr 1fr 64px', gap: 1.25, alignItems: 'center' }}>
@@ -1392,8 +1656,30 @@ function DataHubCollections() {
                   placeholder="Enter Column Name"
                   size="small"
                   error={!c.name}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                      backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                      '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    },
+                  }}
                 />
-                <Select size="small" value={c.type} onChange={(e) => updateColumn(idx, { type: e.target.value })}>
+                <Select
+                  size="small"
+                  value={c.type}
+                  onChange={(e) => updateColumn(idx, { type: e.target.value })}
+                  sx={{
+                    color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                    backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                    '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                    },
+                  }}
+                >
                   {COLUMN_TYPES.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}
@@ -1406,7 +1692,22 @@ function DataHubCollections() {
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   <input type="checkbox" checked={c.masked} onChange={(e) => updateColumn(idx, { masked: e.target.checked })} />
                 </Box>
-                <Select size="small" value={c.field_type} onChange={(e) => updateColumn(idx, { field_type: e.target.value })}>
+                <Select
+                  size="small"
+                  value={c.field_type}
+                  onChange={(e) => updateColumn(idx, { field_type: e.target.value })}
+                  sx={{
+                    color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                    backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                    '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                    '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                    },
+                  }}
+                >
                   {FIELD_TYPES.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}
@@ -1414,7 +1715,7 @@ function DataHubCollections() {
                   ))}
                 </Select>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <IconButton onClick={() => removeColumn(idx)} disabled={newColumns.length === 1}>
+                  <IconButton onClick={() => removeColumn(idx)} disabled={newColumns.length === 1} sx={{ color: '#ef4444' }}>
                     <DeleteOutlineIcon />
                   </IconButton>
                 </Box>
@@ -1422,14 +1723,14 @@ function DataHubCollections() {
             ))}
           </Box>
           <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Button onClick={addColumn} sx={{ textTransform: 'none' }}>
+            <Button onClick={addColumn} sx={{ textTransform: 'none', color: isDarkTheme ? '#38bdf8' : '#2563eb' }}>
               + Add another field
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant="outlined" onClick={() => setEditOpen(false)} sx={{ textTransform: 'none' }}>
+              <Button variant="outlined" onClick={() => setEditOpen(false)} sx={{ textTransform: 'none', color: isDarkTheme ? '#cbd5e1' : 'inherit', borderColor: isDarkTheme ? 'rgba(148,163,184,0.3)' : 'inherit' }}>
                 Cancel
               </Button>
-              <Button variant="contained" onClick={handleEditSave} disabled={saving} sx={{ textTransform: 'none' }}>
+              <Button variant="contained" onClick={handleEditSave} disabled={saving} sx={{ textTransform: 'none', backgroundColor: '#3b82f6' }}>
                 Save
               </Button>
             </Box>
@@ -1438,10 +1739,22 @@ function DataHubCollections() {
       </Dialog>
 
       {/* Add Row Dialog Modal */}
-      <Dialog open={addRowOpen} onClose={() => setAddRowOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={addRowOpen}
+        onClose={() => setAddRowOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            backgroundColor: isDarkTheme ? '#0f172a' : '#ffffff',
+            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+            border: isDarkTheme ? '1px solid rgba(148, 163, 184, 0.2)' : 'none',
+          },
+        }}
+      >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontWeight: 800 }}>Add Row to Collection</Typography>
-          <IconButton onClick={() => setAddRowOpen(false)}>
+          <Typography sx={{ fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>Add Row to Collection</Typography>
+          <IconButton onClick={() => setAddRowOpen(false)} sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -1454,7 +1767,7 @@ function DataHubCollections() {
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: '#475569' }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: isDarkTheme ? '#cbd5e1' : '#475569' }}>
                 Select Collection
               </Typography>
               <Select
@@ -1466,6 +1779,17 @@ function DataHubCollections() {
                   setAddRowData({});
                 }}
                 displayEmpty
+                sx={{
+                  color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                  backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                  '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                  '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                  },
+                }}
               >
                 <MenuItem value="" disabled>Select a collection</MenuItem>
                 {tables.map((t) => (
@@ -1478,12 +1802,12 @@ function DataHubCollections() {
 
             {addRowTableId && addRowColumns.length > 0 ? (
               <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 800, color: isDarkTheme ? '#f8fafc' : '#0f172a' }}>
                   Fill Column Values
                 </Typography>
                 {addRowColumns.map((col) => (
                   <Box key={col.name}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: '#475569' }}>
+                    <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5, color: isDarkTheme ? '#cbd5e1' : '#475569' }}>
                       {col.name} {col.field_type !== 'OTHERS' ? `(${col.field_type})` : ''}
                     </Typography>
                     {col.type === 'BOOLEAN' ? (
@@ -1493,6 +1817,17 @@ function DataHubCollections() {
                         value={addRowData[col.name] || ''}
                         onChange={(e) => setAddRowData((prev) => ({ ...prev, [col.name]: e.target.value }))}
                         displayEmpty
+                        sx={{
+                          color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                          backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                          '.MuiOutlinedInput-notchedOutline': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                          '.MuiSvgIcon-root': { color: isDarkTheme ? '#94a3b8' : 'inherit' },
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: { backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff', color: isDarkTheme ? '#f8fafc' : '#0f172a' },
+                          },
+                        }}
                       >
                         <MenuItem value="">Select value</MenuItem>
                         <MenuItem value="true">True</MenuItem>
@@ -1506,13 +1841,20 @@ function DataHubCollections() {
                         placeholder={`Enter ${col.name}`}
                         value={addRowData[col.name] || ''}
                         onChange={(e) => setAddRowData((prev) => ({ ...prev, [col.name]: e.target.value }))}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            color: isDarkTheme ? '#f8fafc' : '#0f172a',
+                            backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                            '& fieldset': { borderColor: isDarkTheme ? 'rgba(148, 163, 184, 0.25)' : 'rgba(2,6,23,0.15)' },
+                          },
+                        }}
                       />
                     )}
                   </Box>
                 ))}
               </Box>
             ) : addRowTableId ? (
-              <Typography sx={{ color: '#64748b', fontSize: 13, mt: 1 }}>
+              <Typography sx={{ color: isDarkTheme ? '#94a3b8' : '#64748b', fontSize: 13, mt: 1 }}>
                 No columns found in this collection.
               </Typography>
             ) : null}
@@ -1524,7 +1866,7 @@ function DataHubCollections() {
             ) : null}
 
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-              <Button onClick={() => setAddRowOpen(false)} sx={{ textTransform: 'none', color: '#64748b' }}>
+              <Button onClick={() => setAddRowOpen(false)} sx={{ textTransform: 'none', color: isDarkTheme ? '#94a3b8' : '#64748b' }}>
                 Cancel
               </Button>
               <Button

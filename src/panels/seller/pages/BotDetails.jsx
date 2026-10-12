@@ -18,6 +18,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditIcon from '@mui/icons-material/Edit';
 import Swal from 'sweetalert2';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useThemeContext } from '../../../context/ThemeContext';
 import ReactFlow, {
   Background,
   Controls,
@@ -142,6 +143,7 @@ function BotFlowPanel({ flow }) {
 }
 
 function BotDetails() {
+  const { isDark } = useThemeContext();
   const navigate = useNavigate();
   const { botId } = useParams();
 
@@ -254,17 +256,18 @@ function BotDetails() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: 'calc(100vh - 64px)',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
         }}
       >

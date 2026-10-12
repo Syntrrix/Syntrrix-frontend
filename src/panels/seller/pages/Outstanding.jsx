@@ -31,8 +31,10 @@ import { fetchSupplierOutstanding } from '../../../api/outstanding';
 import { fetchSuppliers } from '../../../api/suppliers';
 import { createPayment, fetchSupplierPayments, fetchSupplierPaymentHistory } from '../../../api/payments';
 import Swal from 'sweetalert2';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function Outstanding() {
+  const { isDark } = useThemeContext();
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [suppliers, setSuppliers] = useState([]);
   const [outstandingData, setOutstandingData] = useState([]);
@@ -507,21 +509,22 @@ function Outstanding() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         height: 'calc(100vh - 64px)',
         overflow: 'hidden',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
           display: 'flex',
           flexDirection: 'column',
@@ -539,7 +542,7 @@ function Outstanding() {
             flexShrink: 0,
           }}
         >
-          <Typography variant="h5" fontWeight={700} sx={{ color: '#e5e7eb' }}>
+          <Typography variant="h5" fontWeight={700} sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
             Outstanding
           </Typography>
           <Button
@@ -548,6 +551,7 @@ function Outstanding() {
             sx={{
               textTransform: 'none',
               px: 3,
+              borderRadius: '24px',
               backgroundColor: '#0ea5e9',
               '&:hover': { backgroundColor: '#0284c7' },
             }}
@@ -572,14 +576,6 @@ function Outstanding() {
             loading={loadingSuppliers}
             size="small"
             sx={{ width: 300 }}
-            slotProps={{
-              paper: {
-                sx: {
-                  backgroundColor: '#1e293b',
-                  color: '#e5e7eb',
-                },
-              },
-            }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -588,33 +584,25 @@ function Outstanding() {
                 disabled={loadingSuppliers}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#0f2339',
-                    color: '#e5e7eb',
-                    borderRadius: 1,
+                    backgroundColor: isDark ? '#0f2339' : '#f8fafc',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderRadius: 2,
                   },
                   '& .MuiInputLabel-root': {
-                    color: '#9ca3af',
+                    color: isDark ? '#9ca3af' : '#475569',
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(148, 163, 184, 0.3)',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(148, 163, 184, 0.5)',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0ea5e9',
-                  },
-                }}
-                InputProps={{
-                  ...params.InputProps,
-                  sx: {
-                    ...params.InputProps.sx,
-                    color: '#e5e7eb',
+                    borderColor: isDark ? 'rgba(148, 163, 184, 0.3)' : '#cbd5e1',
                   },
                 }}
               />
             )}
             noOptionsText={loadingSuppliers ? 'Loading suppliers...' : 'No suppliers found'}
+            PaperComponent={({ children, ...other }) => (
+              <Paper {...other} sx={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', color: isDark ? '#e5e7eb' : '#0f172a' }}>
+                {children}
+              </Paper>
+            )}
           />
           {loadingSuppliers && (
             <Typography variant="body2" sx={{ color: '#9ca3af' }}>
@@ -634,9 +622,9 @@ function Outstanding() {
           <TableContainer
             component={Paper}
             sx={{
-              backgroundColor: '#0f172a',
+              backgroundColor: isDark ? '#0f172a' : '#ffffff',
               borderRadius: 2,
-              border: '1px solid rgba(148, 163, 184, 0.25)',
+              border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
               flexGrow: 1,
               overflow: 'auto',
               minHeight: 0,
@@ -650,9 +638,9 @@ function Outstanding() {
               <TableRow>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -660,9 +648,9 @@ function Outstanding() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -670,9 +658,9 @@ function Outstanding() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -680,9 +668,9 @@ function Outstanding() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                   }}
                 >
@@ -690,9 +678,9 @@ function Outstanding() {
                 </TableCell>
                 <TableCell
                   sx={{
-                    backgroundColor: '#1e293b',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
+                    backgroundColor: isDark ? '#1e293b' : '#0ea5e9',
+                    color: '#ffffff',
+                    fontWeight: 700,
                     borderBottom: '1px solid rgba(148, 163, 184, 0.25)',
                     textAlign: 'center',
                   }}

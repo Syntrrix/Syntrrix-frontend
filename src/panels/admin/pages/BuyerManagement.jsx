@@ -18,8 +18,10 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { fetchBuyers } from '../../../api/buyers';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function BuyerManagement() {
+  const { isDark } = useThemeContext();
   const [buyers, setBuyers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -104,12 +106,12 @@ function BuyerManagement() {
   const inactiveBuyers = buyers.filter((buyer) => buyer.status === 'inactive');
 
   return (
-    <Box sx={{ width: '100%', height: '100%', p: { xs: 1.5, md: 3 }, backgroundColor: '#020617', minHeight: '100vh', color: '#e5e7eb' }}>
+    <Box sx={{ width: '100%', height: '100%', p: { xs: 1.5, md: 3 }, backgroundColor: isDark ? '#020617' : '#f1f5f9', minHeight: '100vh', color: isDark ? '#e5e7eb' : '#0f172a', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {/* Header Section */}
       <Box mb={3}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: '#e5e7eb' }}>
+            <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
               Buyer Management
             </Typography>
           

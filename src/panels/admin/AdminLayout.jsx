@@ -3,12 +3,14 @@ import { Outlet } from 'react-router-dom';
 import AdminNavbar from './components/AdminNavbar';
 import AdminSidebar from './components/AdminSidebar';
 import { SidebarProvider, useSidebar } from '../../context/SidebarContext';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const drawerWidth = 300;
 const collapsedWidth = 64;
 
 function AdminLayoutContent() {
   const { isCollapsed } = useSidebar();
+  const { isDark } = useThemeContext();
   const actualWidth = isCollapsed ? collapsedWidth : drawerWidth;
 
   return (
@@ -16,7 +18,9 @@ function AdminLayoutContent() {
       sx={{
         display: 'flex',
         minHeight: '100vh',
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
+        color: isDark ? '#f8fafc' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
         width: '100%',
         overflowX: 'hidden',
       }}

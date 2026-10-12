@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Card, Divider, Stack, TextField, Typography, Paper } from '@mui/material';
 import { getApiOrigin } from '../../../api/client';
-
+import { useThemeContext } from '../../../context/ThemeContext';
 
 function extractScriptInnerHtml(raw) {
   const match = raw.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
@@ -9,6 +9,7 @@ function extractScriptInnerHtml(raw) {
 }
 
 function BotTester() {
+  const { isDark } = useThemeContext();
   const defaultScript = useMemo(() => {
     const base = getApiOrigin();
     return `<script>
@@ -57,17 +58,17 @@ ${js}
   }, [scriptInput]);
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 }, backgroundColor: '#020617', minHeight: '100vh', color: '#e5e7eb' }}>
+    <Box sx={{ p: { xs: 1.5, md: 3 }, backgroundColor: isDark ? '#020617' : '#f1f5f9', minHeight: '100vh', color: isDark ? '#f8fafc' : '#0f172a', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       <Card
         sx={{
-          backgroundColor: '#0f172a',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
         }}
       >
-        <Typography variant="h5" fontWeight={700} sx={{ color: '#e5e7eb' }}>
+        <Typography variant="h5" fontWeight={700} sx={{ color: isDark ? '#e5e7eb' : '#0f172a' }}>
           Bot (Test Widget Script)
         </Typography>
         <Typography variant="body2" sx={{ color: '#9ca3af', mt: 1 }}>

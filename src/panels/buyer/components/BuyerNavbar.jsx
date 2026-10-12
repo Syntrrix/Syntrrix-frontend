@@ -25,6 +25,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
+import ThemeToggle from '../../../components/ThemeToggle';
 
 function BuyerNavbar({ drawerWidth }) {
   const { toggleSidebar, isCollapsed } = useSidebar();
@@ -102,7 +103,8 @@ function BuyerNavbar({ drawerWidth }) {
           </IconButton>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <ThemeToggle size="small" />
           <IconButton
             sx={{
               color: 'text.primary',

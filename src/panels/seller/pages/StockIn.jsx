@@ -15,9 +15,11 @@ import {
 import { stockIn } from '../../../api/inventory';
 import { fetchBatchesByProduct } from '../../../api/batches';
 import { fetchSellerProducts } from '../../../api/products';
+import { useThemeContext } from '../../../context/ThemeContext';
 import Swal from 'sweetalert2';
 
 function StockIn() {
+  const { isDark } = useThemeContext();
   const generateBillNumber = () => `BILL-${Math.floor(100000 + Math.random() * 900000)}`;
   const getToday = () => new Date().toISOString().slice(0, 10); // yyyy-mm-dd
 
@@ -270,19 +272,20 @@ function StockIn() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: '100%',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         display: 'flex',
         justifyContent: 'center',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
           width: '100%',
           maxWidth: 1200,
@@ -490,9 +493,10 @@ function StockIn() {
                     onClick={handleClear}
                     sx={{
                       textTransform: 'none',
-                      color: '#e5e7eb',
-                      borderColor: 'rgba(255,255,255,0.2)',
-                      '&:hover': { borderColor: '#0ea5e9', color: '#0ea5e9' },
+                      borderRadius: '24px',
+                      color: isDark ? '#e5e7eb' : '#0f172a',
+                      borderColor: isDark ? 'rgba(148,163,184,0.6)' : '#cbd5e1',
+                      '&:hover': { borderColor: '#ef4444', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.08)' },
                     }}
                   >
                     Clear
@@ -503,6 +507,7 @@ function StockIn() {
                     disabled={loading}
                     sx={{
                       textTransform: 'none',
+                      borderRadius: '24px',
                       px: 4,
                       backgroundColor: '#0ea5e9',
                       '&:hover': { backgroundColor: '#0284c7' },

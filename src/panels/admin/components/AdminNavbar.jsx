@@ -24,10 +24,13 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
+import ThemeToggle from '../../../components/ThemeToggle';
 
 function AdminNavbar({ drawerWidth }) {
   const { toggleSidebar, isCollapsed } = useSidebar();
   const { user, logout } = useAuth();
+  const { isDark } = useThemeContext();
   const navigate = useNavigate();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -84,11 +87,11 @@ function AdminNavbar({ drawerWidth }) {
       sx={{
         width: { md: `calc(100% - ${actualWidth}px)` },
         ml: { md: `${actualWidth}px` },
-        backgroundColor: '#0f172a',
-        color: '#e5e7eb',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-        borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
-        transition: 'width 0.3s ease, margin-left 0.3s ease',
+        backgroundColor: isDark ? '#0f172a' : '#ffffff',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
+        borderBottom: isDark ? '1px solid rgba(148, 163, 184, 0.1)' : '1px solid rgba(226, 232, 240, 0.8)',
+        transition: 'width 0.3s ease, margin-left 0.3s ease, background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, sm: 3 } }}>
@@ -98,17 +101,18 @@ function AdminNavbar({ drawerWidth }) {
             aria-label="open drawer"
             edge="start"
             onClick={toggleSidebar}
-            sx={{ mr: 2, display: { md: 'none' }, color: '#e5e7eb' }}
+            sx={{ mr: 2, display: { md: 'none' }, color: isDark ? '#e5e7eb' : '#0f172a' }}
           >
             <MenuIcon />
           </IconButton>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <ThemeToggle size="small" />
           <IconButton
             onClick={handleNotificationMenuOpen}
             sx={{
-              color: '#e5e7eb',
+              color: isDark ? '#e5e7eb' : '#0f172a',
               '&:hover': {
                 backgroundColor: alpha('#22d3ee', 0.15),
               },

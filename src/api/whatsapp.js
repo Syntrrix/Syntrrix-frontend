@@ -15,13 +15,24 @@ export const disconnectWhatsApp = async (configId = null) => {
   return data;
 };
 
-export const testWhatsAppConnection = async (testNumber, useTemplate = false, templateName = 'hello_world', languageCode = 'en_US', configId = null) => {
+export const testWhatsAppConnection = async (
+  testNumber,
+  useTemplate = false,
+  templateName = 'hello_world',
+  languageCode = 'en_US',
+  configId = null,
+  headerMediaUrl = null,
+  bodyParams = null
+) => {
   const { data } = await apiClient.post('whatsapp/test/', {
     test_number: testNumber,
     use_template: useTemplate,
     template_name: templateName,
     language_code: languageCode,
     config_id: configId,
+    whatsapp_config_id: configId,
+    header_media_url: headerMediaUrl,
+    body_params: bodyParams,
   });
   return data;
 };
@@ -42,8 +53,11 @@ export const createWhatsAppTemplate = async (payload) => {
   return data;
 };
 
-export const syncWhatsAppTemplates = async (configId = null) => {
-  const { data } = await apiClient.post('whatsapp/templates/sync/', { config_id: configId });
+export const syncWhatsAppTemplates = async (configIdOrPayload = null) => {
+  const payload = typeof configIdOrPayload === 'object' && configIdOrPayload !== null
+    ? configIdOrPayload
+    : { config_id: configIdOrPayload };
+  const { data } = await apiClient.post('whatsapp/templates/sync/', payload);
   return data;
 };
 
@@ -59,5 +73,10 @@ export const createWhatsAppCampaign = async (payload) => {
 
 export const fetchCampaignRecipients = async (campaignId) => {
   const { data } = await apiClient.get(`whatsapp/campaigns/recipients/?campaign_id=${campaignId}`);
+  return data;
+};
+
+export const uploadWhatsAppMedia = async (formData) => {
+  const { data } = await apiClient.post('whatsapp/media-upload/', formData);
   return data;
 };

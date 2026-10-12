@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import ChatIcon from '@mui/icons-material/Chat';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -6,7 +7,9 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import {
+  Badge,
   Box,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -25,6 +28,7 @@ import PropTypes from 'prop-types';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../../context/SidebarContext';
 import { useAuth } from '../../context/AuthContext';
+import { fetchSellerLiveChatSupportSessions } from '../../api/liveChat';
 
 function TeamSidebar({ drawerWidth }) {
   const { isSidebarOpen, toggleSidebar, isCollapsed, toggleCollapse } = useSidebar();
@@ -36,6 +40,61 @@ function TeamSidebar({ drawerWidth }) {
   const actualWidth = isCollapsed ? collapsedWidth : drawerWidth;
   const isTeamManager = user?.role?.id === 4;
   const basePath = isTeamManager ? '/team-manager' : '/agent';
+
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+function dedupeSessionsForCount(list) {
+  const byKey = new Map();
+  (Array.isArray(list) ? list : []).forEach((session) => {
+    const phone = String(session?.mobile_number || '').replace(/\D+/g, '');
+    const email = String(session?.email || '').trim().toLowerCase();
+    const key = phone || email ? `${phone}::${email}` : `sid::${String(session?.session_id || '')}`;
+    const existing = byKey.get(key);
+    const getTs = (s) => {
+      const raw = s?.updated_at || s?.last_message_created_at || s?.created_at || '';
+      const ts = raw ? new Date(raw).getTime() : 0;
+      return Number.isFinite(ts) ? ts : 0;
+    };
+    if (!existing || getTs(session) > getTs(existing)) {
+      byKey.set(key, session);
+    }
+  });
+  return Array.from(byKey.values());
+}
+
+  const updateUnreadCount = useCallback(async () => {
+    try {
+      const resp = await fetchSellerLiveChatSupportSessions();
+      if (resp?.success && Array.isArray(resp.data)) {
+        const deduped = dedupeSessionsForCount(resp.data);
+        const count = deduped.filter((s) => Number(s.unread_count || 0) > 0).length;
+        setUnreadChatCount(count);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void updateUnreadCount();
+    const interval = setInterval(() => {
+      void updateUnreadCount();
+    }, 4000);
+
+    const handleCustomEvent = (e) => {
+      if (typeof e.detail?.unreadCount === 'number') {
+        setUnreadChatCount(e.detail.unreadCount);
+      } else {
+        void updateUnreadCount();
+      }
+    };
+
+    window.addEventListener('live_chat_unread_update', handleCustomEvent);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('live_chat_unread_update', handleCustomEvent);
+    };
+  }, [updateUnreadCount]);
 
   const items = [
     { label: 'Dashboard', to: `${basePath}/dashboard`, icon: <AssessmentIcon /> },
@@ -84,38 +143,60 @@ function TeamSidebar({ drawerWidth }) {
 
       <Box sx={{ flexGrow: 1, py: 1, overflowY: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
         <List sx={{ px: 0.5 }}>
-          {items.map((item) => (
-            <Tooltip key={item.to} title={isCollapsed ? item.label : ''} placement="right">
-              <ListItemButton
-                component={NavLink}
-                to={item.to}
-                onClick={() => {
-                  if (!isDesktop) toggleSidebar();
-                }}
-                sx={{
-                  mx: 1,
-                  mb: 0.3,
-                  borderRadius: 2,
-                  justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  '&:hover': { backgroundColor: alpha('#22d3ee', 0.1) },
-                  '&.active': {
-                    backgroundColor: alpha('#22d3ee', 0.18),
-                    borderLeft: '4px solid #22d3ee',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: isCollapsed ? 0 : 40, justifyContent: 'center', color: '#9ca3af' }}>
-                  {item.icon}
-                </ListItemIcon>
-                {!isCollapsed && (
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{ fontSize: '0.95rem', color: '#e5e7eb' }}
-                  />
-                )}
-              </ListItemButton>
-            </Tooltip>
-          ))}
+          {items.map((item) => {
+            const isLiveChat = item.label === 'Live Chat' || item.to.includes('live-chat-support');
+            return (
+              <Tooltip key={item.to} title={isCollapsed ? (isLiveChat && unreadChatCount > 0 ? `${item.label} (${unreadChatCount})` : item.label) : ''} placement="right">
+                <ListItemButton
+                  component={NavLink}
+                  to={item.to}
+                  onClick={() => {
+                    if (!isDesktop) toggleSidebar();
+                  }}
+                  sx={{
+                    mx: 1,
+                    mb: 0.3,
+                    borderRadius: 2,
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    '&:hover': { backgroundColor: alpha('#22d3ee', 0.1) },
+                    '&.active': {
+                      backgroundColor: alpha('#22d3ee', 0.18),
+                      borderLeft: '4px solid #22d3ee',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: isCollapsed ? 0 : 40, justifyContent: 'center', color: '#9ca3af' }}>
+                    {isLiveChat && unreadChatCount > 0 ? (
+                      <Badge
+                        badgeContent={unreadChatCount}
+                        color="error"
+                        max={99}
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontWeight: 900,
+                            fontSize: 11,
+                            height: 18,
+                            minWidth: 18,
+                            px: 0.5,
+                          },
+                        }}
+                      >
+                        {item.icon}
+                      </Badge>
+                    ) : (
+                      item.icon
+                    )}
+                  </ListItemIcon>
+                  {!isCollapsed && (
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{ fontSize: '0.95rem', color: '#e5e7eb', noWrap: true }}
+                    />
+                  )}
+                </ListItemButton>
+              </Tooltip>
+            );
+          })}
         </List>
       </Box>
 

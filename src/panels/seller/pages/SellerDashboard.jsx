@@ -25,6 +25,7 @@ import {
   Legend,
 } from 'recharts';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
 import { getInventorySummary } from '../../../api/inventory';
 import { fetchCustomerPurchaseHistory } from '../../../api/customers';
 import { fetchCustomerOutstanding } from '../../../api/outstanding';
@@ -49,6 +50,7 @@ const OUTSTANDING_AMOUNT_KEY_PREFIX = 'sellerDashboard_outstandingAmount_';
 
 function SellerDashboard() {
   const { user } = useAuth();
+  const { isDark } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [monthlySales, setMonthlySales] = useState([]);
   const [productWiseSales, setProductWiseSales] = useState([]);
@@ -497,7 +499,7 @@ function SellerDashboard() {
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '100vh',
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#f8fafc',
         }}
       >
         <CircularProgress sx={{ color: '#0ea5e9' }} />
@@ -509,9 +511,10 @@ function SellerDashboard() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f8fafc',
         minHeight: '100vh',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       {/* First Row: Monthly Sales and Product Wise Sales */}

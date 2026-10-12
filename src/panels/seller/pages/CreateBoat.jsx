@@ -41,6 +41,7 @@ import 'reactflow/dist/style.css';
 import Swal from 'sweetalert2';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
 import { createBot, fetchBots, publishBot, updateBot, uploadBotBuilderMedia } from '../../../api/bots';
 import { getApiOrigin } from '../../../api/client';
 
@@ -1253,22 +1254,38 @@ function BotFlowPreview({ nodes, edges, design, sellerInvoice }) {
 
 const STEPS = ['Create Bot', 'Design', 'Publish'];
 
-function getNodeTheme(kind) {
+function getNodeTheme(kind, isDark = true) {
   const k = (kind || '').toString();
-  if (k === 'message') return { accent: '#22c1ff', bg: '#0b2035', title: '#60d9ff', body: '#9cc8e8' };
-  if (k === 'yes_no' || k === 'multiple_choice') return { accent: '#d946ef', bg: '#251231', title: '#f472b6', body: '#e9b3d9' };
-  if (k === 'media_upload') return { accent: '#38bdf8', bg: '#10243a', title: '#7dd3fc', body: '#bae6fd' };
-  if (k === 'media_download') return { accent: '#2dd4bf', bg: '#0f2a28', title: '#5eead4', body: '#99f6e4' };
-  if (k === 'name' || k === 'phone' || k === 'email' || k === 'address' || k === 'custom_input' || k === 'data_storage_requirement') {
-    return { accent: '#8b5cf6', bg: '#1b1737', title: '#a78bfa', body: '#c8bff3' };
+  if (isDark) {
+    if (k === 'message') return { accent: '#22c1ff', bg: '#0b2035', headerBg: 'transparent', title: '#60d9ff', body: '#9cc8e8', idColor: '#8fb3d0', border: 'rgba(96,165,250,0.28)' };
+    if (k === 'yes_no' || k === 'multiple_choice') return { accent: '#d946ef', bg: '#251231', headerBg: 'transparent', title: '#f472b6', body: '#e9b3d9', idColor: '#e9b3d9', border: 'rgba(217,70,239,0.45)' };
+    if (k === 'media_upload') return { accent: '#38bdf8', bg: '#10243a', headerBg: 'transparent', title: '#7dd3fc', body: '#bae6fd', idColor: '#7dd3fc', border: 'rgba(56,189,248,0.35)' };
+    if (k === 'media_download') return { accent: '#2dd4bf', bg: '#0f2a28', headerBg: 'transparent', title: '#5eead4', body: '#99f6e4', idColor: '#5eead4', border: 'rgba(45,212,191,0.35)' };
+    if (k === 'name' || k === 'phone' || k === 'email' || k === 'address' || k === 'custom_input' || k === 'data_storage_requirement') {
+      return { accent: '#8b5cf6', bg: '#1b1737', headerBg: 'transparent', title: '#a78bfa', body: '#c8bff3', idColor: '#a78bfa', border: 'rgba(139,92,246,0.35)' };
+    }
+    if (k === 'data_hub') return { accent: '#06b6d4', bg: '#112d3a', headerBg: 'transparent', title: '#67e8f9', body: '#b7ecf4', idColor: '#67e8f9', border: 'rgba(6,182,212,0.45)' };
+    if (k === 'catalogue') return { accent: '#f59e0b', bg: '#2d1f0b', headerBg: 'transparent', title: '#fbbf24', body: '#fde68a', idColor: '#fbbf24', border: 'rgba(245,158,11,0.45)' };
+    if (k === 'agent_assign') return { accent: '#34d399', bg: '#0f2a22', headerBg: 'transparent', title: '#6ee7b7', body: '#a7f3d0', idColor: '#6ee7b7', border: 'rgba(52,211,153,0.35)' };
+    return { accent: '#22c1ff', bg: '#0b2035', headerBg: 'transparent', title: '#60d9ff', body: '#9cc8e8', idColor: '#8fb3d0', border: 'rgba(96,165,250,0.28)' };
+  } else {
+    // High Contrast Light Theme Node Cards
+    if (k === 'message') return { accent: '#0284c7', bg: '#ffffff', headerBg: '#f0f9ff', title: '#0284c7', body: '#0f172a', idColor: '#0369a1', border: '#bae6fd' };
+    if (k === 'yes_no' || k === 'multiple_choice') return { accent: '#c026d3', bg: '#ffffff', headerBg: '#fdf4ff', title: '#c026d3', body: '#0f172a', idColor: '#a21caf', border: '#f5d0fe' };
+    if (k === 'media_upload') return { accent: '#0ea5e9', bg: '#ffffff', headerBg: '#f0f9ff', title: '#0ea5e9', body: '#0f172a', idColor: '#0284c7', border: '#bae6fd' };
+    if (k === 'media_download') return { accent: '#0d9488', bg: '#ffffff', headerBg: '#f0fdf4', title: '#0d9488', body: '#0f172a', idColor: '#0f766e', border: '#99f6e4' };
+    if (k === 'name' || k === 'phone' || k === 'email' || k === 'address' || k === 'custom_input' || k === 'data_storage_requirement') {
+      return { accent: '#7c3aed', bg: '#ffffff', headerBg: '#f5f3ff', title: '#7c3aed', body: '#0f172a', idColor: '#6d28d9', border: '#ddd6fe' };
+    }
+    if (k === 'data_hub') return { accent: '#0891b2', bg: '#ffffff', headerBg: '#ecfeff', title: '#0891b2', body: '#0f172a', idColor: '#0e7490', border: '#a5f3fc' };
+    if (k === 'catalogue') return { accent: '#d97706', bg: '#ffffff', headerBg: '#fffbeb', title: '#d97706', body: '#0f172a', idColor: '#b45309', border: '#fde68a' };
+    if (k === 'agent_assign') return { accent: '#059669', bg: '#ffffff', headerBg: '#ecfdf5', title: '#059669', body: '#0f172a', idColor: '#047857', border: '#a7f3d0' };
+    return { accent: '#0284c7', bg: '#ffffff', headerBg: '#f0f9ff', title: '#0284c7', body: '#0f172a', idColor: '#0369a1', border: '#bae6fd' };
   }
-  if (k === 'data_hub') return { accent: '#06b6d4', bg: '#112d3a', title: '#67e8f9', body: '#b7ecf4' };
-  if (k === 'catalogue') return { accent: '#f59e0b', bg: '#2d1f0b', title: '#fbbf24', body: '#fde68a' };
-  if (k === 'agent_assign') return { accent: '#34d399', bg: '#0f2a22', title: '#6ee7b7', body: '#a7f3d0' };
-  return { accent: '#22c1ff', bg: '#0b2035', title: '#60d9ff', body: '#9cc8e8' };
 }
 
 function StandardBotNode({ id, data, selected }) {
+  const { isDark } = useThemeContext();
   const kind = (data?.kind || '').toString();
   const isStart = id === 'start';
   const titleMap = {
@@ -1286,23 +1303,23 @@ function StandardBotNode({ id, data, selected }) {
   };
   const title = titleMap[kind] || 'Component';
   const subtitle = kind === 'message' ? (data?.text || '').toString() : (data?.prompt || '').toString();
-  const theme = getNodeTheme(kind);
+  const theme = getNodeTheme(kind, isDark);
   const handleStyle = { width: 10, height: 10, border: '2px solid #fff' };
   return (
     <Box
       sx={{
         width: 250,
-        border: selected ? `1px solid ${theme.accent}` : '1px solid rgba(96,165,250,0.28)',
+        border: selected ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`,
         borderRadius: 1.5,
         backgroundColor: theme.bg,
         overflow: 'hidden',
         position: 'relative',
-        boxShadow: selected ? `0 0 0 1px ${theme.accent}66, 0 8px 24px rgba(2,6,23,0.40)` : '0 8px 24px rgba(2,6,23,0.35)',
+        boxShadow: selected ? `0 0 0 2px ${theme.accent}44, 0 8px 24px rgba(0,0,0,0.12)` : (isDark ? '0 8px 24px rgba(2,6,23,0.35)' : '0 4px 14px rgba(0,0,0,0.08)'),
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#22c1ff', top: -6, ...handleStyle }} />
-      <Box sx={{ px: 1.25, py: 0.7, borderBottom: '1px solid rgba(148,163,184,0.18)' }}>
-        <Typography sx={{ fontSize: 11, color: '#8fb3d0', fontWeight: 700 }}>
+      <Handle type="target" position={Position.Top} style={{ background: '#0ea5e9', top: -6, ...handleStyle }} />
+      <Box sx={{ px: 1.25, py: 0.7, backgroundColor: theme.headerBg, borderBottom: isDark ? '1px solid rgba(148,163,184,0.18)' : '1px solid #e2e8f0' }}>
+        <Typography sx={{ fontSize: 11, color: theme.idColor, fontWeight: 700 }}>
           ID: {String(data?.idHint || id || '').slice(-6).toUpperCase()}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 0.5 }}>
@@ -1342,52 +1359,54 @@ function StandardBotNode({ id, data, selected }) {
       </Box>
       {kind === 'yes_no' ? (
         <>
-          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: 'rgba(34,193,255,0.18)', borderBottom: '1px solid rgba(34,193,255,0.24)', position: 'relative' }}>
+          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: isDark ? 'rgba(34,193,255,0.18)' : '#f0f9ff', borderBottom: isDark ? '1px solid rgba(34,193,255,0.24)' : '1px solid #e2e8f0', position: 'relative' }}>
             <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700 }}>Yes</Typography>
-            <Handle type="source" id="yes" position={Position.Right} style={{ background: '#22c1ff', right: -7, ...handleStyle }} />
+            <Handle type="source" id="yes" position={Position.Right} style={{ background: '#0ea5e9', right: -7, ...handleStyle }} />
           </Box>
-          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: 'rgba(34,193,255,0.12)', position: 'relative' }}>
+          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: isDark ? 'rgba(34,193,255,0.12)' : '#f8fafc', position: 'relative' }}>
             <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700 }}>No</Typography>
-            <Handle type="source" id="no" position={Position.Right} style={{ background: '#22c1ff', right: -7, ...handleStyle }} />
+            <Handle type="source" id="no" position={Position.Right} style={{ background: '#0ea5e9', right: -7, ...handleStyle }} />
           </Box>
         </>
       ) : (
         <>
-          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: 'rgba(15,23,42,0.18)', position: 'relative' }}>
+          <Box sx={{ px: 1.25, py: 0.65, backgroundColor: isDark ? 'rgba(15,23,42,0.18)' : '#f8fafc', position: 'relative' }}>
             <Typography sx={{ fontSize: 11, color: theme.body, fontWeight: 700 }}>{title}</Typography>
           </Box>
-          <Handle type="source" position={Position.Bottom} style={{ background: '#22c1ff', bottom: -6, ...handleStyle }} />
+          <Handle type="source" position={Position.Bottom} style={{ background: '#0ea5e9', bottom: -6, ...handleStyle }} />
         </>
       )}
     </Box>
   );
 }
 
-function MultipleChoiceNode({ data }) {
+function MultipleChoiceNode({ data, selected }) {
+  const { isDark } = useThemeContext();
   const options = Array.isArray(data?.options) && data.options.length ? data.options : [{ id: 'opt_1', label: 'Option 1' }];
   const q = (data?.prompt || data?.label || '').toString().trim();
+  const theme = getNodeTheme('multiple_choice', isDark);
   return (
     <Box
       sx={{
         width: 268,
-        border: '1px solid rgba(217,70,239,0.45)',
+        border: selected ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`,
         borderRadius: 1.5,
-        backgroundColor: '#251231',
+        backgroundColor: theme.bg,
         overflow: 'hidden',
         position: 'relative',
-        boxShadow: '0 8px 24px rgba(2,6,23,0.40)',
+        boxShadow: selected ? `0 0 0 2px ${theme.accent}44, 0 8px 24px rgba(0,0,0,0.12)` : (isDark ? '0 8px 24px rgba(2,6,23,0.40)' : '0 4px 14px rgba(0,0,0,0.08)'),
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#22c1ff', top: -6 }} />
+      <Handle type="target" position={Position.Top} style={{ background: '#0ea5e9', top: -6 }} />
 
-      <Box sx={{ px: 1.25, py: 0.75, borderBottom: '1px solid rgba(217,70,239,0.28)' }}>
-        <Typography sx={{ fontSize: 11, color: '#e9b3d9', fontWeight: 700 }}>
+      <Box sx={{ px: 1.25, py: 0.75, backgroundColor: theme.headerBg, borderBottom: isDark ? '1px solid rgba(217,70,239,0.28)' : '1px solid #e2e8f0' }}>
+        <Typography sx={{ fontSize: 11, color: theme.idColor, fontWeight: 700 }}>
           ID: {String(data?.idHint || '').replace(/^multiple_choice-/, '').slice(-5).toUpperCase() || '2F784'}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, justifyContent: 'space-between' }}>
           <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#f472b6', lineHeight: 1.2 }}>Options</Typography>
-            <Typography sx={{ fontSize: 11, color: '#e9b3d9', mt: 0.35, lineHeight: 1.3 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 800, color: theme.title, lineHeight: 1.2 }}>Options</Typography>
+            <Typography sx={{ fontSize: 11, color: theme.body, mt: 0.35, lineHeight: 1.3 }}>
               {q || 'What is your choice?'}
             </Typography>
           </Box>
@@ -1425,20 +1444,20 @@ function MultipleChoiceNode({ data }) {
           sx={{
             px: 1.25,
             py: 0.7,
-            backgroundColor: 'rgba(217,70,239,0.12)',
-            borderBottom: '1px solid rgba(217,70,239,0.20)',
+            backgroundColor: isDark ? 'rgba(217,70,239,0.12)' : '#fdf4ff',
+            borderBottom: isDark ? '1px solid rgba(217,70,239,0.20)' : '1px solid #f5d0fe',
             position: 'relative',
             pr: 2.5,
           }}
         >
-          <Typography sx={{ fontSize: 12, color: '#f3d2e8', fontWeight: 700, pr: 0.5, lineHeight: 1.35 }}>
+          <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700, pr: 0.5, lineHeight: 1.35 }}>
             {(opt.label || '').trim() || 'Option'}
           </Typography>
           <Handle
             type="source"
             id={String(opt.id)}
             position={Position.Right}
-            style={{ background: '#22c1ff', width: 10, height: 10, border: '2px solid #fff', right: -6, top: '50%', transform: 'translateY(-50%)' }}
+            style={{ background: '#0ea5e9', width: 10, height: 10, border: '2px solid #fff', right: -6, top: '50%', transform: 'translateY(-50%)' }}
           />
         </Box>
       ))}
@@ -1446,28 +1465,30 @@ function MultipleChoiceNode({ data }) {
   );
 }
 
-function DataHubNode({ data }) {
+function DataHubNode({ data, selected }) {
+  const { isDark } = useThemeContext();
   const op = (data?.operation || 'INSERT').toUpperCase();
+  const theme = getNodeTheme('data_hub', isDark);
   return (
     <Box
       sx={{
         width: 250,
-        border: '1px solid rgba(6,182,212,0.45)',
+        border: selected ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`,
         borderRadius: 1.5,
-        backgroundColor: '#112d3a',
+        backgroundColor: theme.bg,
         overflow: 'hidden',
         position: 'relative',
-        boxShadow: '0 8px 24px rgba(2,6,23,0.40)',
+        boxShadow: selected ? `0 0 0 2px ${theme.accent}44, 0 8px 24px rgba(0,0,0,0.12)` : (isDark ? '0 8px 24px rgba(2,6,23,0.40)' : '0 4px 14px rgba(0,0,0,0.08)'),
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#22c1ff', top: -6 }} />
+      <Handle type="target" position={Position.Top} style={{ background: '#0ea5e9', top: -6 }} />
 
-      <Box sx={{ px: 1.25, py: 0.7, borderBottom: '1px solid rgba(6,182,212,0.24)' }}>
-        <Typography sx={{ fontSize: 11, color: '#b7ecf4', fontWeight: 700 }}>
+      <Box sx={{ px: 1.25, py: 0.7, backgroundColor: theme.headerBg, borderBottom: isDark ? '1px solid rgba(6,182,212,0.24)' : '1px solid #e2e8f0' }}>
+        <Typography sx={{ fontSize: 11, color: theme.idColor, fontWeight: 700 }}>
           ID: {String(data?.idHint || '').replace('data_hub-', '').slice(-5).toUpperCase() || 'C6825'}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#67e8f9' }}>Database Hub</Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 800, color: theme.title }}>Database Hub</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <IconButton
               size="small"
@@ -1494,22 +1515,23 @@ function DataHubNode({ data }) {
             <MoreVertIcon sx={{ fontSize: 14, color: '#64748b' }} />
           </Box>
         </Box>
-        <Typography sx={{ fontSize: 11, color: '#b7ecf4', mt: 0.25 }}>{op}</Typography>
+        <Typography sx={{ fontSize: 11, color: theme.body, mt: 0.25 }}>{op}</Typography>
       </Box>
 
-      <Box sx={{ px: 1.25, py: 0.65, backgroundColor: 'rgba(6,182,212,0.22)', borderBottom: '1px solid rgba(6,182,212,0.24)', position: 'relative' }}>
-        <Typography sx={{ fontSize: 12, color: '#b7ecf4', fontWeight: 700 }}>Success</Typography>
-        <Handle type="source" id="success" position={Position.Right} style={{ background: '#22c1ff', right: -7 }} />
+      <Box sx={{ px: 1.25, py: 0.65, backgroundColor: isDark ? 'rgba(6,182,212,0.22)' : '#ecfeff', borderBottom: isDark ? '1px solid rgba(6,182,212,0.24)' : '1px solid #a5f3fc', position: 'relative' }}>
+        <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700 }}>Success</Typography>
+        <Handle type="source" id="success" position={Position.Right} style={{ background: '#0ea5e9', right: -7 }} />
       </Box>
-      <Box sx={{ px: 1.25, py: 0.65, backgroundColor: 'rgba(6,182,212,0.16)', position: 'relative' }}>
-        <Typography sx={{ fontSize: 12, color: '#b7ecf4', fontWeight: 700 }}>Fallback</Typography>
-        <Handle type="source" id="fallback" position={Position.Right} style={{ background: '#22c1ff', right: -7 }} />
+      <Box sx={{ px: 1.25, py: 0.65, backgroundColor: isDark ? 'rgba(6,182,212,0.16)' : '#f0fdfa', position: 'relative' }}>
+        <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700 }}>Fallback</Typography>
+        <Handle type="source" id="fallback" position={Position.Right} style={{ background: '#0ea5e9', right: -7 }} />
       </Box>
     </Box>
   );
 }
 
-function CatalogueNode({ data }) {
+function CatalogueNode({ data, selected }) {
+  const { isDark } = useThemeContext();
   const options =
     Array.isArray(data?.options) && data.options.length
       ? data.options
@@ -1517,24 +1539,25 @@ function CatalogueNode({ data }) {
           { id: 'opt_1', label: 'Option 1' },
           { id: 'opt_2', label: 'Option 2' },
         ];
+  const theme = getNodeTheme('catalogue', isDark);
   return (
     <Box
       sx={{
         width: 280,
-        border: '1px solid rgba(14,165,233,0.42)',
+        border: selected ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`,
         borderRadius: 1.5,
-        backgroundColor: '#10253a',
+        backgroundColor: theme.bg,
         overflow: 'hidden',
-        boxShadow: '0 8px 24px rgba(2,6,23,0.40)',
+        boxShadow: selected ? `0 0 0 2px ${theme.accent}44, 0 8px 24px rgba(0,0,0,0.12)` : (isDark ? '0 8px 24px rgba(2,6,23,0.40)' : '0 4px 14px rgba(0,0,0,0.08)'),
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#22c1ff', top: -6 }} />
-      <Box sx={{ px: 1.25, py: 0.75, borderBottom: '1px solid rgba(14,165,233,0.24)' }}>
-        <Typography sx={{ fontSize: 11, color: '#b7ecf4', fontWeight: 700 }}>
+      <Handle type="target" position={Position.Top} style={{ background: '#0ea5e9', top: -6 }} />
+      <Box sx={{ px: 1.25, py: 0.75, backgroundColor: theme.headerBg, borderBottom: isDark ? '1px solid rgba(14,165,233,0.24)' : '1px solid #e2e8f0' }}>
+        <Typography sx={{ fontSize: 11, color: theme.idColor, fontWeight: 700 }}>
           ID: {String(data?.idHint || '').replace('catalogue-', '').slice(-5).toUpperCase() || 'CAT01'}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#67e8f9' }}>Catalogue</Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 800, color: theme.title }}>Catalogue</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <IconButton size="small" sx={{ p: 0.25, color: '#64748b' }} onClick={(e) => { e.stopPropagation(); data?.onCopy?.(); }} title="Copy">
               <ContentCopyIcon sx={{ fontSize: 14 }} />
@@ -1552,24 +1575,24 @@ function CatalogueNode({ data }) {
           sx={{
             px: 1.25,
             py: 0.7,
-            backgroundColor: 'rgba(14,165,233,0.1)',
-            borderBottom: '1px solid rgba(14,165,233,0.18)',
+            backgroundColor: isDark ? 'rgba(14,165,233,0.1)' : '#fffbeb',
+            borderBottom: isDark ? '1px solid rgba(14,165,233,0.18)' : '1px solid #fde68a',
             position: 'relative',
             pr: 2.5,
           }}
         >
-          <Typography sx={{ fontSize: 12, color: '#dbeafe', fontWeight: 700, pr: 0.5, lineHeight: 1.35 }}>
+          <Typography sx={{ fontSize: 12, color: theme.body, fontWeight: 700, pr: 0.5, lineHeight: 1.35 }}>
             {(opt.label || '').trim() || 'Option'}
           </Typography>
           <Handle
             type="source"
             id={String(opt.id)}
             position={Position.Right}
-            style={{ background: '#22c1ff', width: 10, height: 10, border: '2px solid #fff', right: -6, top: '50%', transform: 'translateY(-50%)' }}
+            style={{ background: '#0ea5e9', width: 10, height: 10, border: '2px solid #fff', right: -6, top: '50%', transform: 'translateY(-50%)' }}
           />
         </Box>
       ))}
-      <Handle type="source" position={Position.Bottom} style={{ background: '#22c1ff', bottom: -6 }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: '#0ea5e9', bottom: -6 }} />
     </Box>
   );
 }
@@ -1747,6 +1770,7 @@ const COMPONENTS = [
 ];
 
 function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSave, design, setDesign, botId }) {
+  const { isDark } = useThemeContext();
   const wrapperRef = useRef(null);
   const idRef = useRef(1000);
 
@@ -2081,8 +2105,9 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
       <Paper
         sx={{
           p: 2,
-          backgroundColor: '#081528',
-          border: '1px solid rgba(96,165,250,0.22)',
+          backgroundColor: isDark ? '#081528' : '#ffffff',
+          border: isDark ? '1px solid rgba(96,165,250,0.22)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.05)',
           height: { xs: 'min(70vh, 620px)', md: 620 },
           maxHeight: { xs: 'min(70vh, 620px)', md: 620 },
           display: 'flex',
@@ -2092,10 +2117,10 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
         }}
       >
         <Box sx={{ flexShrink: 0 }}>
-          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, color: '#e5e7eb' }}>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, color: isDark ? '#e5e7eb' : '#0f172a' }}>
             Create Bot
           </Typography>
-          <Typography variant="body2" sx={{ color: '#9ca3af', mb: 2 }}>
+          <Typography variant="body2" sx={{ color: isDark ? '#9ca3af' : '#475569', mb: 2 }}>
             Drag components onto the canvas and connect them visually.
           </Typography>
           <TextField
@@ -2104,9 +2129,9 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
             placeholder="Search Component"
             size="small"
             fullWidth
-            InputProps={{ sx: { backgroundColor: '#0f2339', color: '#e5e7eb' } }}
+            InputProps={{ sx: { backgroundColor: isDark ? '#0f2339' : '#f8fafc', color: isDark ? '#e5e7eb' : '#0f172a', borderRadius: 2 } }}
           />
-          <Divider sx={{ borderColor: 'rgba(148,163,184,0.15)', my: 2 }} />
+          <Divider sx={{ borderColor: isDark ? 'rgba(148,163,184,0.15)' : '#e2e8f0', my: 2 }} />
         </Box>
         <Box sx={sidePanelScrollSx}>
         <Box
@@ -2115,8 +2140,8 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
           onClick={() => setShowData((v) => !v)}
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', mb: 1 }}
         >
-          <Typography sx={{ color: '#e5e7eb', fontWeight: 800, fontSize: 13 }}>Data</Typography>
-          <Typography sx={{ color: '#9ca3af', fontWeight: 800, fontSize: 12 }}>{showData ? '−' : '+'}</Typography>
+          <Typography sx={{ color: isDark ? '#e5e7eb' : '#0f172a', fontWeight: 800, fontSize: 13 }}>Data</Typography>
+          <Typography sx={{ color: isDark ? '#9ca3af' : '#475569', fontWeight: 800, fontSize: 12 }}>{showData ? '−' : '+'}</Typography>
         </Box>
         {showData ? (
           <Stack spacing={1.25}>
@@ -2131,16 +2156,22 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
                   sx={{
                     p: 1.5,
                     cursor: 'grab',
-                    backgroundColor: '#0b2035',
-                    border: '1px solid rgba(96,165,250,0.25)',
-                    color: '#e5e7eb',
+                    backgroundColor: isDark ? '#0b2035' : '#f8fafc',
+                    border: isDark ? '1px solid rgba(96,165,250,0.25)' : '1px solid #cbd5e1',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderRadius: 1.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: '#0ea5e9',
+                      boxShadow: '0 4px 12px rgba(14,165,233,0.15)',
+                    },
                     '&:active': { cursor: 'grabbing' },
                   }}
                 >
-                  <Typography fontWeight={700} sx={{ fontSize: 14 }}>
+                  <Typography fontWeight={700} sx={{ fontSize: 14, color: isDark ? '#e5e7eb' : '#0f172a' }}>
                     {c.title}
                   </Typography>
-                  <Typography sx={{ color: '#9ca3af', fontSize: 12 }}>{c.subtitle}</Typography>
+                  <Typography sx={{ color: isDark ? '#9ca3af' : '#475569', fontSize: 12 }}>{c.subtitle}</Typography>
                 </Paper>
               ))}
           </Stack>
@@ -2152,8 +2183,8 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
           onClick={() => setShowComponents((v) => !v)}
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', mb: 1, mt: 2 }}
         >
-          <Typography sx={{ color: '#e5e7eb', fontWeight: 800, fontSize: 13 }}>Components</Typography>
-          <Typography sx={{ color: '#9ca3af', fontWeight: 800, fontSize: 12 }}>{showComponents ? '−' : '+'}</Typography>
+          <Typography sx={{ color: isDark ? '#e5e7eb' : '#0f172a', fontWeight: 800, fontSize: 13 }}>Components</Typography>
+          <Typography sx={{ color: isDark ? '#9ca3af' : '#475569', fontWeight: 800, fontSize: 12 }}>{showComponents ? '−' : '+'}</Typography>
         </Box>
         {showComponents ? (
           <Stack spacing={1.25} sx={{ mb: 2 }}>
@@ -2168,23 +2199,29 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
                   sx={{
                     p: 1.5,
                     cursor: 'grab',
-                    backgroundColor: '#0b2035',
-                    border: '1px solid rgba(96,165,250,0.25)',
-                    color: '#e5e7eb',
+                    backgroundColor: isDark ? '#0b2035' : '#f8fafc',
+                    border: isDark ? '1px solid rgba(96,165,250,0.25)' : '1px solid #cbd5e1',
+                    color: isDark ? '#e5e7eb' : '#0f172a',
+                    borderRadius: 1.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: '#0ea5e9',
+                      boxShadow: '0 4px 12px rgba(14,165,233,0.15)',
+                    },
                     '&:active': { cursor: 'grabbing' },
                   }}
                 >
-                  <Typography fontWeight={700} sx={{ fontSize: 14 }}>
+                  <Typography fontWeight={700} sx={{ fontSize: 14, color: isDark ? '#e5e7eb' : '#0f172a' }}>
                     {c.title}
                   </Typography>
-                  <Typography sx={{ color: '#9ca3af', fontSize: 12 }}>{c.subtitle}</Typography>
+                  <Typography sx={{ color: isDark ? '#9ca3af' : '#475569', fontSize: 12 }}>{c.subtitle}</Typography>
                 </Paper>
               ))}
           </Stack>
         ) : null}
         </Box>
         <Box sx={{ flexShrink: 0, pt: 0 }}>
-          <Divider sx={{ borderColor: 'rgba(148,163,184,0.15)', my: 2 }} />
+          <Divider sx={{ borderColor: isDark ? 'rgba(148,163,184,0.15)' : '#e2e8f0', my: 2 }} />
           <Stack spacing={1}>
             <Button
               variant="outlined"
@@ -2193,11 +2230,11 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
                 setEdges(DEFAULT_FLOW.edges);
                 setSelectedNodeId(null);
               }}
-              sx={{ textTransform: 'none', borderColor: 'rgba(148,163,184,0.25)', color: '#e5e7eb' }}
+              sx={{ textTransform: 'none', borderRadius: '24px', borderColor: isDark ? 'rgba(148,163,184,0.25)' : '#cbd5e1', color: isDark ? '#e5e7eb' : '#0f172a' }}
             >
               Reset to Example Flow
             </Button>
-            <Button variant="contained" onClick={onSave} sx={{ textTransform: 'none', backgroundColor: '#0ea5e9' }}>
+            <Button variant="contained" onClick={onSave} sx={{ textTransform: 'none', borderRadius: '24px', backgroundColor: '#0ea5e9' }}>
               Save & Continue
             </Button>
           </Stack>
@@ -2205,7 +2242,7 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
       </Paper>
 
       {/* Canvas */}
-      <Paper ref={wrapperRef} sx={{ height: 620, backgroundColor: '#071426', border: '1px solid rgba(96,165,250,0.18)' }} onDragOver={onDragOver} onDrop={onDrop}>
+      <Paper ref={wrapperRef} sx={{ height: 620, backgroundColor: isDark ? '#071426' : '#f1f5f9', border: isDark ? '1px solid rgba(96,165,250,0.18)' : '1px solid #e2e8f0', borderRadius: 2 }} onDragOver={onDragOver} onDrop={onDrop}>
         <ReactFlow
           nodes={canvasNodes}
           edges={edges}
@@ -2215,11 +2252,11 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
           onNodeClick={(_, node) => setSelectedNodeId(node.id)}
           fitView={false}
           nodeTypes={nodeTypes}
-          style={{ background: '#071426' }}
+          style={{ background: isDark ? '#071426' : '#f1f5f9' }}
         >
-          <MiniMap />
+          <MiniMap nodeColor={isDark ? '#0ea5e9' : '#0284c7'} maskColor={isDark ? 'rgba(15,23,42,0.6)' : 'rgba(241,245,249,0.7)'} />
           <Controls />
-          <Background color="rgba(148,163,184,0.26)" gap={24} size={1.5} />
+          <Background color={isDark ? 'rgba(148,163,184,0.26)' : 'rgba(100,116,139,0.25)'} gap={24} size={1.5} />
         </ReactFlow>
       </Paper>
 
@@ -2227,8 +2264,9 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
       <Paper
         sx={{
           p: 2,
-          backgroundColor: '#081528',
-          border: '1px solid rgba(96,165,250,0.22)',
+          backgroundColor: isDark ? '#081528' : '#ffffff',
+          border: isDark ? '1px solid rgba(96,165,250,0.22)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.05)',
           height: { xs: 'min(70vh, 620px)', md: 620 },
           maxHeight: { xs: 'min(70vh, 620px)', md: 620 },
           display: 'flex',
@@ -2237,12 +2275,12 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
           boxSizing: 'border-box',
         }}
       >
-        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, flexShrink: 0, color: '#e5e7eb' }}>
+        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1, flexShrink: 0, color: isDark ? '#e5e7eb' : '#0f172a' }}>
           Properties
         </Typography>
         <Box sx={sidePanelScrollSx}>
         {!selectedNode ? (
-          <Typography variant="body2" sx={{ color: '#9ca3af' }}>
+          <Typography variant="body2" sx={{ color: isDark ? '#9ca3af' : '#475569' }}>
             Select a node to edit its content.
           </Typography>
         ) : (
@@ -2574,10 +2612,20 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
                     sx={{ m: 0, width: '100%', justifyContent: 'space-between' }}
                     control={
                       <Switch
-                        checked={Boolean(selectedNode.data?.auto_sequence)}
-                        onChange={(e) =>
-                          updateSelectedNodeData({ auto_sequence: Boolean(e.target.checked) })
-                        }
+                        checked={Boolean(
+                          selectedNode.data?.auto_sequence ??
+                          selectedNode.data?.sequence_assign ??
+                          selectedNode.data?.round_robin ??
+                          true
+                        )}
+                        onChange={(e) => {
+                          const val = Boolean(e.target.checked);
+                          updateSelectedNodeData({
+                            auto_sequence: val,
+                            sequence_assign: val,
+                            round_robin: val,
+                          });
+                        }}
                         color="primary"
                       />
                     }
@@ -3376,6 +3424,7 @@ function FlowBuilder({ nodes, setNodes, edges, setEdges, loadingSuppliers, onSav
 }
 
 function WhatsAppAutomation() {
+  const { isDark } = useThemeContext();
   const { user } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -3594,17 +3643,17 @@ function WhatsAppAutomation() {
   };
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 }, backgroundColor: '#020617', minHeight: '100vh', color: '#e5e7eb' }}>
+    <Box sx={{ p: { xs: 1.5, md: 3 }, backgroundColor: isDark ? '#020617' : '#f1f5f9', minHeight: '100vh', color: isDark ? '#f8fafc' : '#0f172a', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       <Card
         sx={{
-          backgroundColor: '#0f172a',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
         }}
       >
-        <Typography variant="h5" fontWeight={700} sx={{ mb: 2, color: '#e5e7eb' }}>
+        <Typography variant="h5" fontWeight={700} sx={{ mb: 2, color: isDark ? '#e5e7eb' : '#0f172a' }}>
           My Chatbot
         </Typography>
 
@@ -3613,13 +3662,13 @@ function WhatsAppAutomation() {
           activeStep={activeStep}
           sx={{
             mb: 3,
-            '& .MuiStepLabel-label': { color: 'rgba(229,231,235,0.8)', fontWeight: 700 },
-            '& .MuiStepLabel-label.Mui-active': { color: '#ffffff', fontWeight: 900 },
-            '& .MuiStepLabel-label.Mui-completed': { color: '#ffffff', fontWeight: 800 },
-            '& .MuiStepIcon-root': { color: 'rgba(148,163,184,0.35)' },
-            '& .MuiStepIcon-root.Mui-active': { color: '#38bdf8' },
+            '& .MuiStepLabel-label': { color: isDark ? 'rgba(229,231,235,0.8)' : '#475569', fontWeight: 700 },
+            '& .MuiStepLabel-label.Mui-active': { color: isDark ? '#ffffff' : '#0f172a', fontWeight: 900 },
+            '& .MuiStepLabel-label.Mui-completed': { color: isDark ? '#ffffff' : '#0f172a', fontWeight: 800 },
+            '& .MuiStepIcon-root': { color: isDark ? 'rgba(148,163,184,0.35)' : '#cbd5e1' },
+            '& .MuiStepIcon-root.Mui-active': { color: '#0ea5e9' },
             '& .MuiStepIcon-root.Mui-completed': { color: '#22c55e' },
-            '& .MuiStepConnector-line': { borderColor: 'rgba(148,163,184,0.25)' },
+            '& .MuiStepConnector-line': { borderColor: isDark ? 'rgba(148,163,184,0.25)' : '#cbd5e1' },
           }}
         >
           {STEPS.map((label, idx) => (

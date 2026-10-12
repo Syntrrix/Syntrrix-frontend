@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import InventoryIcon from '@mui/icons-material/Inventory2';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -19,6 +20,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupIcon from '@mui/icons-material/Group';
 import {
   Avatar,
+  Badge,
   Box,
   Chip,
   Divider,
@@ -39,13 +41,15 @@ import PropTypes from 'prop-types';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
+import { fetchSellerLiveChatSupportSessions } from '../../../api/liveChat';
 
 const navSections = [
   {
     title: null,
     items: [
       { label: 'Dashboard', to: '/seller/dashboard', icon: <AssessmentIcon /> }
-      
+
     ],
   },
   {
@@ -66,7 +70,7 @@ const navSections = [
       { label: 'Categories', to: '/seller/categories', icon: <CategoryIcon /> },
       // { label: 'Stock In', to: '/seller/stock-in', icon: <InventoryIcon /> },
       // { label: 'Stock Out', to: '/seller/stock-out', icon: <LocalShippingIcon /> },
-      
+
     ],
   },
   {
@@ -96,8 +100,8 @@ const navSections = [
       { label: 'Data Hub', to: '/seller/data-hub', icon: <ListAltIcon /> },
       // { label: 'Chatbot', to: '/seller/chatbot', icon: <SmartToyIcon /> },
     ],
-    
-    
+
+
   },
 
   {
@@ -112,8 +116,8 @@ const navSections = [
     items: [
       { label: 'WhatsApp', to: '/seller/whatsapp', icon: <WhatsAppIcon /> },
     ],
-    
-    
+
+
   },
   {
     title: 'Reports & Settings',
@@ -148,11 +152,67 @@ function isItemAllowed(item, planFeatures) {
 function SellerSidebar({ drawerWidth }) {
   const { isSidebarOpen, toggleSidebar, isCollapsed, toggleCollapse } = useSidebar();
   const { user, logout } = useAuth();
+  const { isDark } = useThemeContext();
   const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const collapsedWidth = 64;
   const actualWidth = isCollapsed ? collapsedWidth : drawerWidth;
+
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+function dedupeSessionsForCount(list) {
+  const byKey = new Map();
+  (Array.isArray(list) ? list : []).forEach((session) => {
+    const phone = String(session?.mobile_number || '').replace(/\D+/g, '');
+    const email = String(session?.email || '').trim().toLowerCase();
+    const key = phone || email ? `${phone}::${email}` : `sid::${String(session?.session_id || '')}`;
+    const existing = byKey.get(key);
+    const getTs = (s) => {
+      const raw = s?.updated_at || s?.last_message_created_at || s?.created_at || '';
+      const ts = raw ? new Date(raw).getTime() : 0;
+      return Number.isFinite(ts) ? ts : 0;
+    };
+    if (!existing || getTs(session) > getTs(existing)) {
+      byKey.set(key, session);
+    }
+  });
+  return Array.from(byKey.values());
+}
+
+  const updateUnreadCount = useCallback(async () => {
+    try {
+      const resp = await fetchSellerLiveChatSupportSessions();
+      if (resp?.success && Array.isArray(resp.data)) {
+        const deduped = dedupeSessionsForCount(resp.data);
+        const count = deduped.filter((s) => Number(s.unread_count || 0) > 0).length;
+        setUnreadChatCount(count);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void updateUnreadCount();
+    const interval = setInterval(() => {
+      void updateUnreadCount();
+    }, 4000);
+
+    const handleCustomEvent = (e) => {
+      if (typeof e.detail?.unreadCount === 'number') {
+        setUnreadChatCount(e.detail.unreadCount);
+      } else {
+        void updateUnreadCount();
+      }
+    };
+
+    window.addEventListener('live_chat_unread_update', handleCustomEvent);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('live_chat_unread_update', handleCustomEvent);
+    };
+  }, [updateUnreadCount]);
 
   const planFeatures = user?.plan?.features || null;
 
@@ -177,17 +237,19 @@ function SellerSidebar({ drawerWidth }) {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#0b1624',
-        color: '#e5e7eb',
+        backgroundColor: isDark ? '#0b1624' : '#ffffff',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Toolbar
         sx={{
-          backgroundColor: '#0f1f33',
-          color: '#e5e7eb',
+          backgroundColor: isDark ? '#0f1f33' : '#f8fafc',
+          color: isDark ? '#e5e7eb' : '#0f172a',
           minHeight: '80px !important',
           justifyContent: 'space-between',
           px: isCollapsed ? 1 : 2,
+          borderBottom: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
         }}
       >
         {!isCollapsed && (
@@ -197,22 +259,26 @@ function SellerSidebar({ drawerWidth }) {
               src="/biznex-logo.png"
               alt="Biznex Logo"
               onClick={() => navigate('/seller/dashboard')}
+              onError={(e) => {
+                if (e.target.src && !e.target.src.endsWith('biznex-logo.png.png')) {
+                  e.target.src = '/biznex-logo.png.png';
+                }
+              }}
               sx={{
-                maxWidth: '160px',
+                maxWidth: '170px',
                 width: 'auto',
                 height: 'auto',
-                maxHeight: '80px',
+                maxHeight: '75px',
                 objectFit: 'contain',
                 display: 'block',
                 cursor: 'pointer',
+                filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25))',
+                transition: 'opacity 0.2s ease',
                 '&:hover': {
-                  opacity: 0.8,
+                  opacity: 0.85,
                 },
               }}
             />
-            <Typography variant="caption" sx={{ opacity: 0.9, textAlign: 'center', fontSize: '0.7rem' }}>
-              The Intelligent Business Matrix
-            </Typography>
           </Box>
         )}
         {isCollapsed && (
@@ -221,6 +287,11 @@ function SellerSidebar({ drawerWidth }) {
             src="/biznex-logo.png"
             alt="Biznex Logo"
             onClick={() => navigate('/seller/dashboard')}
+            onError={(e) => {
+              if (e.target.src && !e.target.src.endsWith('biznex-logo.png.png')) {
+                e.target.src = '/biznex-logo.png.png';
+              }
+            }}
             sx={{
               maxWidth: '50px',
               width: 'auto',
@@ -230,9 +301,6 @@ function SellerSidebar({ drawerWidth }) {
               display: 'block',
               mx: 'auto',
               cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.8,
-              },
             }}
           />
         )}
@@ -240,12 +308,12 @@ function SellerSidebar({ drawerWidth }) {
           <IconButton
             onClick={toggleCollapse}
             sx={{
-                color: '#cbd5e1',
+              color: '#cbd5e1',
               position: 'absolute',
               right: 8,
               top: 16,
               '&:hover': {
-                  backgroundColor: alpha('#22d3ee', 0.15),
+                backgroundColor: alpha('#22d3ee', 0.15),
               },
             }}
           >
@@ -257,7 +325,7 @@ function SellerSidebar({ drawerWidth }) {
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
 
       <Box
-                sx={{
+        sx={{
           flexGrow: 1,
           overflowY: 'auto',
           py: 1,
@@ -270,73 +338,96 @@ function SellerSidebar({ drawerWidth }) {
           {filteredNavSections.map((section) => (
             <Box key={section.title || 'root'} sx={{ mb: 1 }}>
               {!isCollapsed && section.title && (
-            <Typography
-              variant="caption"
-              sx={{
+                <Typography
+                  variant="caption"
+                  sx={{
                     px: 2,
-                py: 1,
+                    py: 1,
                     color: '#9ca3af',
                     fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                fontSize: '0.7rem',
-              }}
-            >
-                  {section.title}
-            </Typography>
-          )}
-              {section.items.map((item) => (
-            <Tooltip key={item.to} title={isCollapsed ? item.label : ''} placement="right">
-              <ListItemButton
-                component={NavLink}
-                to={item.to}
-                end={item.to === '/seller/customers' || item.to === '/seller/whatsapp'}
-                onClick={() => {
-                  if (!isDesktop) toggleSidebar();
-                }}
-                sx={{
-                  mx: 1,
-                      mb: 0.3,
-                  borderRadius: 2,
-                  justifyContent: isCollapsed ? 'center' : 'flex-start',
-                      minHeight: 42,
-                  '&:hover': {
-                        backgroundColor: alpha('#22d3ee', 0.1),
-                  },
-                  '&.active': {
-                        backgroundColor: alpha('#22d3ee', 0.18),
-                        borderLeft: `4px solid #22d3ee`,
-                        '& .MuiListItemIcon-root': {
-                          color: '#22d3ee',
-                        },
-                        '& .MuiListItemText-primary': {
-                          fontWeight: 600,
-                          color: '#22d3ee',
-                        },
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: isCollapsed ? 0 : 40,
-                    justifyContent: 'center',
-                        color: '#9ca3af',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    fontSize: '0.7rem',
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                {!isCollapsed && (
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontSize: '0.95rem',
-                          color: '#e5e7eb',
-                    }}
-                  />
-                )}
-              </ListItemButton>
-            </Tooltip>
-              ))}
+                  {section.title}
+                </Typography>
+              )}
+              {section.items.map((item) => {
+                const isLiveChat = item.label === 'Live Chat Support';
+                return (
+                  <Tooltip key={item.to} title={isCollapsed ? (isLiveChat && unreadChatCount > 0 ? `${item.label} (${unreadChatCount})` : item.label) : ''} placement="right">
+                    <ListItemButton
+                      component={NavLink}
+                      to={item.to}
+                      end={item.to === '/seller/customers' || item.to === '/seller/whatsapp'}
+                      onClick={() => {
+                        if (!isDesktop) toggleSidebar();
+                      }}
+                      sx={{
+                        mx: 1,
+                        mb: 0.3,
+                        borderRadius: 2,
+                        justifyContent: isCollapsed ? 'center' : 'flex-start',
+                        minHeight: 42,
+                        '&:hover': {
+                          backgroundColor: alpha('#22d3ee', 0.1),
+                        },
+                        '&.active': {
+                          backgroundColor: alpha('#22d3ee', 0.18),
+                          borderLeft: `4px solid #22d3ee`,
+                          '& .MuiListItemIcon-root': {
+                            color: '#22d3ee',
+                          },
+                          '& .MuiListItemText-primary': {
+                            fontWeight: 600,
+                            color: '#22d3ee',
+                          },
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: isCollapsed ? 0 : 40,
+                          justifyContent: 'center',
+                          color: '#9ca3af',
+                        }}
+                      >
+                        {isLiveChat && unreadChatCount > 0 ? (
+                          <Badge
+                            badgeContent={unreadChatCount}
+                            color="error"
+                            max={99}
+                            sx={{
+                              '& .MuiBadge-badge': {
+                                fontWeight: 900,
+                                fontSize: 11,
+                                height: 18,
+                                minWidth: 18,
+                                px: 0.5,
+                              },
+                            }}
+                          >
+                            {item.icon}
+                          </Badge>
+                        ) : (
+                          item.icon
+                        )}
+                      </ListItemIcon>
+                      {!isCollapsed && (
+                        <ListItemText
+                          primary={item.label}
+                          primaryTypographyProps={{
+                            fontSize: '0.95rem',
+                            color: '#e5e7eb',
+                            noWrap: true,
+                          }}
+                        />
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                );
+              })}
             </Box>
           ))}
         </List>
@@ -395,8 +486,8 @@ function SellerSidebar({ drawerWidth }) {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: drawerWidth,
-            borderRight: `1px solid rgba(255,255,255,0.08)`,
-            backgroundColor: '#0b1624',
+            borderRight: isDark ? `1px solid rgba(255,255,255,0.08)` : `1px solid #e2e8f0`,
+            backgroundColor: isDark ? '#0b1624' : '#ffffff',
           },
         }}
       >
@@ -410,10 +501,10 @@ function SellerSidebar({ drawerWidth }) {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: actualWidth,
-            borderRight: `1px solid rgba(255,255,255,0.08)`,
+            borderRight: isDark ? `1px solid rgba(255,255,255,0.08)` : `1px solid #e2e8f0`,
             transition: 'width 0.3s ease',
             overflowX: 'hidden',
-            backgroundColor: '#0b1624',
+            backgroundColor: isDark ? '#0b1624' : '#ffffff',
           },
         }}
       >

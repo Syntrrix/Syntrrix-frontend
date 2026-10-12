@@ -13,6 +13,7 @@ import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useThemeContext } from '../../../context/ThemeContext';
 import { fetchCustomerPurchaseHistory, fetchCustomers } from '../../../api/customers';
 import { fetchCustomerOutstanding } from '../../../api/outstanding';
 import { getInventorySummary } from '../../../api/inventory';
@@ -28,6 +29,7 @@ const predefinedQuestions = [
 ];
 
 function Chatbot() {
+  const { isDark } = useThemeContext();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
@@ -564,16 +566,17 @@ function Chatbot() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: '100vh',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#0f172a',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
           overflow: 'hidden',
           height: 'calc(100vh - 120px)',
           display: 'flex',

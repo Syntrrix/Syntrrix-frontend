@@ -14,11 +14,13 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import { createProduct } from '../../../api/products';
 import { fetchCategories } from '../../../api/categories';
+import { useThemeContext } from '../../../context/ThemeContext';
 import Swal from 'sweetalert2';
 
 const units = ['kg', 'g', 'ltr', 'ml', 'pcs', 'piece', 'pack', 'box', 'bag', 'bottle', 'carton'];
 
 function AddProduct() {
+  const { isDark } = useThemeContext();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     product_name: '',
@@ -195,19 +197,20 @@ function AddProduct() {
     <Box
       sx={{
         p: { xs: 1.5, md: 3 },
-        backgroundColor: '#020617',
+        backgroundColor: isDark ? '#020617' : '#f1f5f9',
         minHeight: '100%',
-        color: '#e5e7eb',
+        color: isDark ? '#e5e7eb' : '#0f172a',
         display: 'flex',
         justifyContent: 'center',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
       <Card
         sx={{
-          backgroundColor: '#020617',
+          backgroundColor: isDark ? '#020617' : '#ffffff',
           borderRadius: 2,
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          boxShadow: '0 20px 45px rgba(15,23,42,0.85)',
+          border: isDark ? '1px solid rgba(148, 163, 184, 0.25)' : '1px solid #e2e8f0',
+          boxShadow: isDark ? '0 20px 45px rgba(15,23,42,0.85)' : '0 10px 30px rgba(0,0,0,0.05)',
           p: { xs: 2, md: 3 },
           width: '100%',
           maxWidth: 1000,
