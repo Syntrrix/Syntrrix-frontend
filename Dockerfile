@@ -16,9 +16,9 @@ COPY . .
 ARG REACT_APP_API_BASE_URL=http://localhost:8000/api/
 ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
 
-# Memory optimization: disable source maps and increase heap limit for build
+# Memory optimization: disable source maps and increase heap limit safely for 2GB server
 ENV GENERATE_SOURCEMAP=false
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 
 # Build production bundle
 RUN npm run build
