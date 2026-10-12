@@ -1,7 +1,7 @@
 import { getAccessToken } from './storage';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/';
-// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.qa.syntrrix.com/api/';
+// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.app.syntrrix.com/api/';
 
 
 
