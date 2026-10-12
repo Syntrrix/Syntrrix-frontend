@@ -13,7 +13,7 @@ RUN npm ci --legacy-peer-deps --no-audit --prefer-offline
 COPY . .
 
 # Accept build-time argument for API Base URL
-ARG REACT_APP_API_BASE_URL=http://localhost:8000/api/
+ARG REACT_APP_API_BASE_URL=https://api.app.syntrrix.com/api/
 ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
 
 # Memory optimization: disable source maps and increase heap limit safely for 2GB server
